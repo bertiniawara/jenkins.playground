@@ -11,7 +11,7 @@ def imageName = ""
 def userId
 def userGroupId
 
-node("backend") {
+node {
     properties([
             gitLabConnection('LAO GITLAB'),
             pipelineTriggers([
