@@ -1,0 +1,33 @@
+node {
+
+    environment {
+        serviceName = "cm.lao.devops.playground"
+    }
+
+    stage('SCM') {
+        git 'https://gitlab.lao-sarl.cm/microservice/cm.lao.devops.playground.git'
+    }
+    
+    stage ('Scan using Gradle') {
+        steps {
+            withSonarQubeEnv(installationName: 'SonarQubeScanner', credentialsId: 'SonarQubeSecret') {
+                sh "./gradlew sonarqube \
+                  -Dsonar.projectKey=${serviceName} \
+                  -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                  -Dsonar.login=${env.SONAR_AUTH_TOKEN} \
+                  -Dsonar.projectName=${serviceName} \
+                  -Dsonar.projectVersion=${BUILD_NUMBER}"
+            }
+        }
+    }
+
+    stage('Build App') {
+        steps {
+            withEnv(["PATH=/usr/local/gradle/bin"]) { 
+                withGradle {                 
+                    sh "gradle  fatJar --no-daemon"
+                } 
+            }
+        }
+    }
+}

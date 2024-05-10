@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: devops-playground
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URI:http://localhost:8888}
+
+  datasource:
+    url: jdbc:${DB_VENDOR}://${DB_HOST}:${DB_PORT}/${DB_DATABASE}
+    username: ${DB_USER}
+    password: ${DB_USER_PASSWORD}
+    driver-class-name: ${DB_JDBC_DRIVER_CLASS_NAME}
+
+  liquibase:
+    change-log: classpath:/cm/lao/devops/playground/repository/liquibase/changelog/master.xml
+    enabled: true
+    contexts: ${LIQUIBASE_CONTEXT}
+
+  cloud:
+    discovery:
+      reactive:
+        enabled: false
+
+    function:
+      definition:
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_URL}
+    kubernetes:
+      discovery:
+        discovery-server-url: ${DISCOVERY_SERVER_URL}
+    config:
+      discovery:
+        enabled: false
+  security:
+    enabled: true
+lao:
+  multi-tenancy:
+    enabled: true
+  tenant:
+    uri: ${LAO_TENANT_PROVIDER_URI}
+  encryption:
+    enabled: false
+    secret-key: ${LAO_ENCRYPTION_SECRET_KEY:MySuperSecretKey}
+    initialization-vector: ${LAO_ENCRYPTION_INIT_VECTOR:MySuperSecretKey}
+
+  cache:
+    hazelcast:
+      map: ${HZ_ROOT_MAP:data}
+      cluster:
+        name: ${HZ_CLUSTER}
+        addresses: ${HZ_ADDRESSES}

@@ -1,0 +1,52 @@
+println 'File: availablePortFinder.gradle'
+
+def int MIN_PRIVATE_PORT = 49152;
+def int MAX_PRIVATE_PORT = 65535;
+
+def lock = new java.util.concurrent.locks.ReentrantLock();
+
+def int startPort = new java.util.Random().nextInt(MAX_PRIVATE_PORT - MIN_PRIVATE_PORT) + MIN_PRIVATE_PORT;
+def int current = startPort;
+
+ext.nextAvailablePort = {
+	lock.lock();
+	try {
+		while (true) {
+			if (current >= MAX_PRIVATE_PORT) {
+				current = MIN_PRIVATE_PORT;
+			} else {
+				current++;
+			}
+			if (current == startPort) {
+				throw new NoSuchElementException("Could not find an available port within port range.");
+			}
+			int candidate = current;
+			if (available(candidate)) {
+				return candidate;
+			}
+		}
+	} finally {
+		lock.unlock();
+	}
+}
+
+def available(port) {
+	try {
+		java.net.ServerSocket ss = new java.net.ServerSocket(port);
+		try {
+			ss.setReuseAddress(true);
+		} finally {
+			ss.close();
+		}
+		
+		java.net.DatagramSocket ds = new java.net.DatagramSocket(port);
+		try {
+			ds.setReuseAddress(true);
+		} finally {
+			ds.close();
+		}
+		return true;
+	} catch (IOException e) {
+		return false;
+	}
+}

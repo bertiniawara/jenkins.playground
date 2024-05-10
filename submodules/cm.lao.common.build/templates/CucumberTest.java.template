@@ -1,0 +1,9 @@
+package cm.lao.${productPackage}.e2e.features;
+
+import io.cucumber.junit.platform.engine.Cucumber;
+import org.junit.jupiter.api.Tag;
+
+@Cucumber
+@Tag("e2e")
+public class CucumberTest {
+}

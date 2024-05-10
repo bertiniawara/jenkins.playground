@@ -1,0 +1,13 @@
+<ivysettings>
+	<property name="ivy.checksums" value="" />
+	<settings defaultResolver="lao.repository" />
+	<credentials host="ivy.lao-sarl.com" realm="LAO Ivy Repository" username="${ivyUser}" passwd="${ivyPassword}" />
+	<resolvers>
+		<url name="lao.repository">
+			<ivy
+				pattern="http://ivy.lao-sarl.com/repository/[organisation]/[module]/ivys/ivy-[revision].xml" />
+			<artifact
+				pattern="http://ivy.lao-sarl.com/repository/[organisation]/[module]/[type]s/[artifact]-[revision](-[classifier]).[ext]" />
+		</url>
+	</resolvers>
+</ivysettings>

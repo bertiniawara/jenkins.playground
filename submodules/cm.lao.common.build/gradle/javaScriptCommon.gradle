@@ -1,0 +1,15 @@
+println 'File: javascriptCommon.gradle'
+
+group = 'lao'
+ext.isJavascript = true
+ext.outputDir = "gradleOutput"
+
+ext.packageJson = new groovy.json.JsonSlurper().parseText(file("package.json").text)
+version = packageJson.version
+println "Version is: " + version
+
+apply from: '../submodules/cm.lao.common.build/gradle/buildProfiles.gradle'
+
+def npmBuildScript = ext.isReleaseBuild || (project.hasProperty("shouldRunTests") && ext.shouldRunTests) ? ext.releaseBuildBashScript : ext.controllerBuildBashScript
+def scriptsFolder = rootProject.rootDir.parent + "/submodules/cm.lao.common.build/scripts/"
+ext.bashArguments = [scriptsFolder + npmBuildScript];

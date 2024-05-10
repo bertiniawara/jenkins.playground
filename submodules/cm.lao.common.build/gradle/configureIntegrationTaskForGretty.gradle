@@ -1,0 +1,28 @@
+println "File: configureIntegrationTaskForGretty.gradle"
+
+def webModuleEvaluated = false
+def e2eModuleEvaluated = false
+
+def e2eModuleProject = project(":${e2eModule}")
+def webModuleProject = project(":${webModule}")
+
+webModuleProject.tasks.whenTaskAdded {t -> 
+	if ("appAfterIntegrationTest".equals(t.getName())) {
+		t.mustRunAfter e2eModuleProject.tasks.test
+	}
+}
+
+ext.configureIntegrationTestTask = { p ->
+	if (webModuleEvaluated && e2eModuleEvaluated) {
+		e2eModuleProject.tasks.test.dependsOn webModuleProject.tasks.integrationTestRunner
+	}
+}
+
+e2eModuleProject.afterEvaluate { p ->
+	e2eModuleEvaluated = true;
+	configureIntegrationTestTask(p)
+}
+webModuleProject.afterEvaluate { p ->
+	webModuleEvaluated = true;
+	configureIntegrationTestTask(p)
+}

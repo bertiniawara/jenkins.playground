@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+<!-- ? fill projectname -->
+<project basedir="." default="build" name="cm.lao.common.dictionary" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+	<property name="junit.unitTestsRoot" value="cm.lao.common.dictionary.AllTests" description="test class full name" />
+	
+	<target name="copySomeSourceIntoBuildDir" depends="clean-dependencies" description="useful for gwt compilation or whenever source files are needed at compiled time">
+		<copy includeemptydirs="false" todir="${build.dir}/cm/lao/common/dictionary/external" verbose="true">
+			<fileset dir="${src.dir}/cm/lao/common/dictionary/external">
+				<include name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<import file="../cm.lao.common.build/ant/common.xml" />	
+	
+	<target name="build" depends="common.build" />
+</project>

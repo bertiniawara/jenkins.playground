@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+    <changeSet id="playground-1:1" author="lagoue.njinthe">
+        <createTable tableName="t_demo">
+            <column autoIncrement="false" name="c_id" type="varchar(255)">
+                <constraints nullable="false" primaryKey="true"
+                             primaryKeyName="pk_demo"/>
+            </column>
+            <column name="c_name" type="varchar(255)"/>
+            <column name="c_isimmutable" type="bool" defaultValueBoolean="false"/>
+            <column name="c_deleted" type="bool" defaultValueBoolean="false"/>
+            <column name="c_version" type="int8" defaultValueNumeric="0"/>
+            <column name="c_tenant_id" type="varchar(255)" defaultValue="1"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="playground-1:2" author="lagoue.njinthe" context="e2e,data_test">
+        <insert tableName="t_demo">
+            <column name="c_id" value="d91722a8-8e47-43ae-8032-49affbb68065"/>
+            <column name="c_name" value="demo_1"/>
+        </insert>
+        <insert tableName="t_demo">
+            <column name="c_id" value="242f22ff-6470-490e-9bb2-d72c6505d093"/>
+            <column name="c_name" value="demo_2"/>
+        </insert>
+        <insert tableName="t_demo">
+            <column name="c_id" value="4d1503ba-312b-40c3-aa0e-8f0736b0fc49"/>
+            <column name="c_name" value="demo_3"/>
+            <column name="c_deleted" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

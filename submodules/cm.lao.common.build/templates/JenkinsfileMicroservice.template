@@ -1,0 +1,204 @@
+def projectFolder = "cm.lao.${productPackage}"
+def pipelineUtils
+def VERSION
+def isMasterBranch
+def isDevelopBranch
+def gitlabCredentials = "jenkins-ssh-credentials-gitlab"
+def isTriggeredManually
+def postgresContainer
+def fakeServicesContainer
+
+pipeline {
+	agent any
+	options {
+		disableConcurrentBuilds()
+		skipStagesAfterUnstable()
+	}
+	tools {
+		jdk		"JDK11"
+		gradle 	"Gradle 6.8.2"
+	}
+
+	stages {
+		stage("SCM-GIT tag and push preparation") {
+			when {
+				branch "develop"
+			}
+			steps {
+				sshagent (credentials: [gitlabCredentials]) {
+					sh("git checkout master")
+					sh("git merge origin/develop")
+				}
+			}
+		}
+		stage("Init") {
+			steps {
+				echo "Initializing..."
+				script {
+					isMasterBranch = env.BRANCH_NAME == "master"
+					isDevelopBranch = env.BRANCH_NAME == "develop"
+					pipelineUtils = load "submodules/cm.lao.common.build/groovy/PipelineUtils.groovy"
+					dir(projectFolder) {
+						withGradle() {
+							VERSION = sh(
+							        returnStdout: true,
+							        script: "gradle properties -q | grep \"version:\" | awk '{print \\\$2}'")
+						}
+					}
+					isTriggeredManually = currentBuild.getBuildCauses('hudson.model.Cause\$UserIdCause').size() > 0
+				}
+			}
+		}
+		stage("Information") {
+			steps {
+				withGradle() {
+					sh "gradle --version"
+				}
+			}
+		}
+		stage("Compile") {
+			steps {
+				dir(projectFolder) {
+					withGradle() {
+						sh "gradle clean classes"
+					}
+				}
+			}
+		}
+		stage("Unit Test") {
+			when {
+				not {
+					branch "master"
+				}
+			}
+			steps {
+				dir(projectFolder) {
+					withGradle() {
+						sh "gradle test"
+					}
+				}
+			}
+			post {
+				always {
+					junit "**/build/test-results/**/TEST*.xml"
+				}
+			}
+		}
+		stage("E2E Test") {
+			when {
+				not {
+					branch "master"
+				}
+			}
+			environment {
+				DATASOURCE_USERNAME = "${productPackageWithUnderscoreSeparator}"
+				DATASOURCE_PASSWORD = "${productPackageWithUnderscoreSeparator}"
+				DATASOURCE_HOST = "localhost"
+				DATASOURCE_PORT = pipelineUtils.findFreePort()
+				DATASOURCE_DB = "${productPackageWithUnderscoreSeparator}db"
+				LIQUIBASE_CONTEXT = "e2e"
+				EUREKA_SERVER_PORT = pipelineUtils.findFreePort()
+				EUREKA_SERVER_HOST = "localhost"
+			}
+			steps {
+				script {
+					postgresContainer = docker.image("postgres:9.6")
+							.run("-p \${env.DATASOURCE_PORT}:5432 " +
+									"-e POSTGRES_USER=\${env.DATASOURCE_USERNAME} " +
+									"-e POSTGRES_PASSWORD=\${env.DATASOURCE_PASSWORD} " +
+									"-e POSTGRES_DB=\${env.DATASOURCE_DB} ")
+                    pipelineUtils.replaceAll(
+                            "fake-services/server/api/eureka.json",
+                            "28960",
+                            "\${env.EUREKA_SERVER_PORT}"
+                    )
+					dir("fake-services") {
+					    fakeServicesContainer = docker.build("${productPackageWithUnderscoreSeparator}-fake-services")
+					            .run("-p \${env.EUREKA_SERVER_PORT}:28960")
+					}
+				}
+				dir(projectFolder) {
+					withGradle() {
+						sh "gradle e2eTest"
+					}
+				}
+			}
+			post {
+				always {
+					junit "**/cucumber-reports/junit/*.xml"
+					cucumber(
+					    buildStatus: 'UNSTABLE',
+					    failedFeaturesNumber: 1,
+					    failedScenariosNumber: 1,
+					    skippedStepsNumber: 1,
+					    failedStepsNumber: 1,
+                        reportTitle: "CUCUMBER (\${projectFolder})",
+                        fileIncludePattern: '**/cucumber-reports/json/*.json',
+                        sortingMethod: 'ALPHABETICAL',
+                        trendsLimit: 100
+                    )
+				}
+				cleanup {
+					script {
+                        try {
+                            if (postgresContainer != null) {
+                                postgresContainer.stop()
+                            }
+                            if (fakeServicesContainer != null) {
+                                fakeServicesContainer.stop()
+                            }
+                        } catch (err) {
+							echo err.getMessage()
+							err.printStackTrace()
+                        } finally {
+					        sh "docker rmi --force ${productPackageWithUnderscoreSeparator}-fake-services"
+                        }
+					}
+				}
+			}
+		}
+		stage("Pusblishing") {
+			when {
+				anyOf {
+					branch "master"
+					branch "develop"
+				}
+			}
+			steps {
+				dir(projectFolder) {
+					withGradle() {
+						sh "gradle publish"
+					}
+				}
+			}
+		}
+	}
+	post {
+		always {
+			script {
+				if (!isMasterBranch) {
+					currentBuild.description = "VERSION: \${VERSION} (\${env.GIT_COMMIT})"
+				}
+				pipelineUtils.notifyBuild('developers@lao-sarl.cm')
+			}
+		}
+		success {
+			script {
+				if (isMasterBranch) {
+					currentBuild.description = "Release \${VERSION} (\${env.GIT_COMMIT})"
+					if (isTriggeredManually) {
+						currentBuild.keepLog = true
+						sshagent (credentials: [gitlabCredentials]) {
+							sh("git tag \${VERSION}")
+							sh("git push origin --tags")
+						}
+					}
+				} else if (isDevelopBranch) {
+					sshagent (credentials: [gitlabCredentials]) {
+						sh("git push origin master")
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,128 @@
+{
+  "name": "cm_lao_uum",
+  "urls": [{
+      "path": "/user/is-already-registered/employee1@lao-sarl.cm",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true,
+            "result": false
+          }
+        }
+      }]
+    },
+    {
+        "path": "/user/is-already-registered/lagoue.njinthe@lao-sarl.cm",
+        "requests": [{
+          "method": "GET",
+          "response": {
+            "statusCode": 200,
+            "body": {
+              "success": true,
+              "result": false
+            }
+          }
+        }]
+      },
+    {
+      "path": "/user/logout",
+      "requests": [{
+        "method": "DELETE",
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true
+          }
+        }
+      }]
+    },
+    {
+      "path": "/user/password/public-key",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true,
+            "result": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAinilPYGzL5yAjEJuuVDAyIwsil5IekLCGiZaXFY0411nnz0ZpgQ/92Dox0V1jtoUaNeNUQZX7+J5qJJJIzzjFbXlvNB1xgk4EZmVU9r1Y+JDGJ6+5IxCLhjGXjJffnjtY33oCEtiSm9ok3CTbHUAguC51MQQWRG4KdUcXsQLENTHhuOqYhWOZ5WsFtvOTKRpM8L7vBjsD9Yyg10vWpe0xdbMPdRGM0GJAbJrfTHXxJ+yLft0u3kqVFcp49sTrdsBL42nIc4S+M33QYUJceZNaLYb6ZbJXlG9YU5s43zCIoMAe02mcUgtwUuNswLQRyioTuBGCaeg46+4NC78+trWzQIDAQAB"
+          }
+        }
+      }]
+    },
+    {
+      "path": "/user/password",
+      "requests": [{
+          "method": "PUT",
+          "body": {
+            "username": "change.password@lao-sarl.cm",
+            "password": "RegExp:.*",
+            "newPassword": "RegExp:.*"
+          },
+          "response": {
+            "statusCode": 200,
+            "body": {
+              "success": true
+            }
+          }
+        },
+        {
+          "method": "PUT",
+          "body": {
+            "username": "change.password.failed@lao-sarl.cm",
+            "password": "RegExp:.*",
+            "newPassword": "RegExp:.*"
+          },
+          "response": {
+            "statusCode": 200,
+            "body": {
+              "success": false,
+              "error": "changePasswordError1"
+            }
+          }
+        },
+        {
+          "method": "PUT",
+          "body": {
+            "username": "lagoue.njinthe",
+            "password": "RegExp:.*",
+            "newPassword": "RegExp:.*"
+          },
+          "response": {
+            "statusCode": 200,
+            "body": {
+              "success": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/role/logistician/user/userId3",
+      "requests": [{
+        "method": "DELETE",
+        "body": {},
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true
+          }
+        }
+      }]
+    },
+    {
+      "path": "/role/admin/user/userId3",
+      "requests": [{
+        "method": "POST",
+        "body": {},
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true
+          }
+        }
+      }]
+    }
+  ]
+}

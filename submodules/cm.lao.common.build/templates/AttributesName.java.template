@@ -1,0 +1,9 @@
+package cm.lao.${productPackage}.util;
+
+import cm.lao.common.util.BaseAttributesName;
+
+/**
+ * 
+ */
+public interface AttributesName extends BaseAttributesName {
+}

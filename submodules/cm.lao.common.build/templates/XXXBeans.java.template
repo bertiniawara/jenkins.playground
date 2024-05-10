@@ -1,0 +1,16 @@
+package cm.lao.${productPackage}.config;
+
+import cm.lao.common.microservice.api.BatchTaskExecutor;
+import cm.lao.${productPackage}.service.${productNameAsCamelCase}BatchTaskExecutor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class ${productNameAsCamelCase}Beans {
+
+    @Bean
+    public BatchTaskExecutor getBatchTaskExecutor() {
+        return new ${productNameAsCamelCase}BatchTaskExecutor();
+    }
+
+}

@@ -1,0 +1,14 @@
+{
+  "id": "1",
+  "identity-provider": {
+    "auth-server-url": "https://auth.lao-sarl.cm",
+    "jwt-issuer-uri": "https://auth.lao-sarl.cm/realms/demo",
+    "more": {
+      "wallet": {
+        "client-id": "playground",
+        "secret-key": "playground-secret",
+        "connection-time-out": 60
+      }
+    }
+  }
+}

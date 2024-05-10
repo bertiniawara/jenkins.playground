@@ -1,0 +1,180 @@
+buildscript {
+	dependencies {
+		classpath("org.openapitools:openapi-generator-gradle-plugin:7.1.0")
+	}
+}
+
+plugins {
+    id 'org.springframework.boot' version '3.2.2'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'java'
+    id "org.openapi.generator" version "7.1.0"
+    id 'com.google.cloud.tools.jib' version '3.4.1'
+}
+
+<<<<<<< HEAD
+version = 'version = '0.3-SNAPSHOT'.3'
+=======
+version = '0.0.0-SNAPSHOT'
+>>>>>>> 637503a1782e823cabe05057e76417bb8bd8b262
+apply from: '../submodules/cm.lao.common.build/gradle/commonMicroservice.gradle'
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    cucumberRuntime {
+        extendsFrom testImplementation
+    }
+}
+
+ext {
+	set('springCloudVersion', "2023.0.0")
+	set('testContainerVersion', "1.19.3")
+	set('commonMicroserviceVersion', "4.0")
+	set('mapstructVersion', "1.5.5.Final")
+	set('cucumberVersion', "7.12.1")
+	set('junitPlatformSuite', "1.9.0")
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+dependencies {
+    implementation("cm.lao.common:microservice:${commonMicroserviceVersion}")
+    testImplementation("cm.lao.common:microservice:${commonMicroserviceVersion}:test")
+    testImplementation('org.springframework.cloud:spring-cloud-starter-contract-stub-runner')
+
+    //kubernetes
+    implementation('org.springframework.cloud:spring-cloud-starter-kubernetes-discoveryclient')
+
+    // Security
+    testImplementation("org.springframework.security:spring-security-test")
+
+    // DB
+    implementation("org.postgresql:postgresql")
+    testImplementation("org.testcontainers:postgresql:${testContainerVersion}")
+    testImplementation("org.testcontainers:junit-jupiter:${testContainerVersion}") {
+        exclude(group: 'org.junit.vintage', module: 'junit-vintage-engine')
+    }
+
+    // OPENAPI
+    implementation('io.swagger:swagger-annotations:1.6.8')
+    implementation('org.openapitools:jackson-databind-nullable:0.2.3')
+    implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2')
+
+    // Lombok
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+    testCompileOnly("org.projectlombok:lombok")
+    testAnnotationProcessor("org.projectlombok:lombok")
+
+    // Mapstruct
+    implementation("org.mapstruct:mapstruct:${mapstructVersion}")
+    annotationProcessor("org.mapstruct:mapstruct-processor:${mapstructVersion}")
+    testAnnotationProcessor("org.mapstruct:mapstruct-processor:${mapstructVersion}")
+
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-webflux")
+	testImplementation("org.springframework.cloud:spring-cloud-stream-test-binder")
+
+	// Cucumber
+	testImplementation("org.junit.platform:junit-platform-suite:${junitPlatformSuite}")
+	testImplementation("org.junit.platform:junit-platform-suite-api:${junitPlatformSuite}")
+	testImplementation("io.cucumber:cucumber-core:${cucumberVersion}")
+	testImplementation("io.cucumber:cucumber-java:${cucumberVersion}")
+	testImplementation("io.cucumber:cucumber-java8:${cucumberVersion}")
+	testImplementation("io.cucumber:cucumber-junit-platform-engine:${cucumberVersion}")
+	testImplementation("io.cucumber:cucumber-spring:${cucumberVersion}")
+}
+
+tasks.named('test') {
+	useJUnitPlatform {
+		excludeTags 'e2e', 'data'
+	}
+	jvmArgs("--enable-preview")
+}
+
+tasks.withType(JavaCompile).each {
+	it.options.compilerArgs.add('--enable-preview')
+}
+
+tasks.register('dataTest', Test) {
+	ignoreFailures = true
+	dependsOn assemble, testClasses
+	useJUnitPlatform {
+		includeTags 'data'
+	}
+	jvmArgs("--enable-preview")
+}
+
+tasks.register('e2eTest') {
+	dependsOn assemble, testClasses
+	doLast {
+		javaexec {
+			main = "io.cucumber.core.cli.Main"
+			classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+			jvmArgs = ["--enable-preview"]
+			args = [
+					'--plugin', 'html:build/cucumber-reports/html/index.html',
+					'--plugin', 'json:build/cucumber-reports/json/cucumber.json',
+					'--plugin', 'junit:build/cucumber-reports/json/cucumber.xml',
+					'--tags', 'not @Disabled',
+					'--glue', 'cm.lao.devops.playground.e2e', 'src/test/resources/cm/lao/devops/playground/e2e/features/'
+			]
+		}
+	}
+}
+
+openApiGenerate {
+	generatorName = "spring"
+	inputSpec = "$rootDir/openapi/main.yaml".toString()
+	outputDir = "$buildDir/generated/sources/openapi".toString()
+	apiPackage = "cm.lao.devops.playground.api"
+	modelPackage = "cm.lao.devops.playground.dto"
+	configOptions = [
+			dateLibrary         : "java8-localdatetime",
+			library             : "spring-boot",
+			interfaceOnly       : "true",
+			useTags             : "true",
+			skipDefaultInterface: "true",
+			useSpringBoot3 : "true"
+	]
+	typeMappings = [
+			time: "java.time.LocalTime",
+	]
+}
+
+compileJava.dependsOn(
+		tasks.openApiGenerate,
+)
+sourceSets.main.java.srcDir layout.buildDirectory.file("generated/sources/openapi/src/main/java").get().asFile.path
+
+jib {
+	def imageNamePrefix = Objects.isNull(System.getenv('NEXUS_DOCKER_REGISTRY_URL')) ? "" : "${System.env.NEXUS_DOCKER_REGISTRY_URL}"
+	def nexusUsername = Objects.isNull(System.getenv('NEXUS_CREDENTIALS_USR')) ? "" : "${System.env.NEXUS_CREDENTIALS_USR}"
+	def nexusPassword = Objects.isNull(System.getenv('NEXUS_CREDENTIALS_PSW')) ? "" : "${System.env.NEXUS_CREDENTIALS_PSW}"
+	from {
+        image = "eclipse-temurin:21-jdk"
+	}
+	to {
+		image = "${imageNamePrefix}/${project.name}"
+		tags = ["${project.version}"]
+		auth {
+			username = nexusUsername
+			password = nexusPassword
+		}
+	}
+	container {
+		creationTime = 'USE_CURRENT_TIMESTAMP'
+		jvmFlags = ['--enable-preview']
+	}
+}

@@ -1,0 +1,38 @@
+spring:
+  config:
+    import: "optional:configserver:"
+  datasource:
+    url: jdbc:tc:postgresql:14.5:///playground_data_test
+    driver-class-name:
+  liquibase:
+    contexts: data_test
+  jpa:
+    eclipselink.logging.level: FINE
+    eclipselink.logging.level.sql: FINE
+    eclipselink.logging.level.jpa: FINE
+    eclipselink.logging.parameters: true
+  security:
+    enabled: false
+  cloud:
+    kubernetes:
+      discovery:
+        enabled: false
+lao:
+  cache:
+    enabled: false
+  test:
+    is-data-test: true
+
+  encryption:
+    secret-key: cMW5qdPTNxZo2EFIXIv8zqKeCf3NM/OiajGO6LGB2CE=
+    initialization-vector: K/XJTwnd7ecCqpcJXv7iVA==
+  scheduler:
+    extinguishable: false
+    transfer:
+      cron: "-"
+      enabled: false
+    account:
+      cron: "-"
+      enabled: false
+keycloak:
+  enable: false

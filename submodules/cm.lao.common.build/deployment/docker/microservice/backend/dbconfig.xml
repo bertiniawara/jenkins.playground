@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database-config>
+   <database-type>postgresql database server</database-type>
+   <schema-name>public</schema-name>
+   <jdbc-data-source>
+      <url>jdbc:postgresql://localhost:5432/XXX</url>
+      <driver-class>org.postgresql.Driver</driver-class>
+      <username>YYY</username>
+      <password>ZZZ</password>
+      <pool-size>15</pool-size>
+   </jdbc-data-source>
+</database-config>

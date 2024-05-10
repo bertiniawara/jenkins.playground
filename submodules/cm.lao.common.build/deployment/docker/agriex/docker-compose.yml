@@ -1,0 +1,25 @@
+---
+version: '3'
+
+services:
+    zuul:
+        image: 127.0.0.1:5000/cm.bao.zuul:0.2.1
+        container_name: zuul
+        ports:
+            - 7001:7001
+        restart: always
+        deploy:
+            placement:
+                constraints:
+                    - node.hostname==h2448355.stratoserver.net
+
+    eureka:
+        image: 127.0.0.1:5000/eureka:1.9.5
+        container_name: eureka
+        ports:
+            - 5002:8080
+        restart: always
+        deploy:
+            placement:
+                constraints:
+                    - node.hostname==h2448355.stratoserver.net

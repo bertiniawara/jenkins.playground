@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+<!-- ? fill projectname -->
+<project basedir="." default="install" name="tomcat-tasks">
+	<property environment="env" />
+	<property name="jenkins.build_id" value="${env.BUILD_NUMBER}" />
+
+	<!-- here are tomcat settings -->
+	<!-- Configure properties to access the Manager application 
+	<property file="admin.properties" />-->
+	<property file="${tomcat.properties.file}" />
+
+	<!-- Configure the custom Ant tasks for the Manager application -->
+	<dirname property="tomcat-tasks.basedir" file="${ant.file.tomcat-tasks}" />
+	<property name="tomcat.home" value="" description="Configure the context path for this application" />
+
+	<echo message="TOMCAT_HOME: ${tomcat.home}" />
+	<taskdef file="${tomcat-tasks.basedir}/tomcat-tasks.properties">
+		<classpath>
+			<pathelement path="${tomcat.home}/lib/catalina-ant.jar" />
+			<pathelement path="${tomcat.home}/lib/tomcat-coyote.jar" />
+			<pathelement path="${tomcat.home}/lib/tomcat-util.jar" />
+		</classpath>
+	</taskdef>
+	<!-- End Tomcat setting -->
+
+	<property name="webapp.name" value="" description="Configure the context path for this application" />
+	<property name="module.org" value="lao" />
+	<property name="module.name" value="" />
+	<property name="module.war.name" value="" />
+	<property name="war.file.name" value="${module.war.name}-${env.app.version}.war" />
+	<property name="lib.dir" value="lib" />
+	<property name="app.file.location" value="${basedir}/${lib.dir}/${war.file.name}" description="The war file of the application to deploy" />
+
+	<target name="install" depends="before-install" description="Install application in Tomcat">
+		<echo message="Installing application '${webapp.name}' from file: '${app.file.location}'" />
+		<deploy url="${tomcat.manager.url}" username="${tomcat.username}" password="${tomcat.password}" update="true" path="/${webapp.name}" localWar="file://${app.file.location}" />
+		<delete dir="${lib.dir}" quiet="true" />
+	</target>
+
+	<!-- ================================= 
+          target: before-install              
+         ================================= -->
+	<target name="before-install" description="description">
+		<mkdir dir="${lib.dir}" />
+		<get dest="${lib.dir}" src="http://ivy.lao-sarl.com/repository/${module.org}/${module.name}/wars/${war.file.name}" />
+	</target>
+
+	<target name="undeploy" description="Remove application in Tomcat">
+		<undeploy url="${tomcat.manager.url}" username="${tomcat.username}" password="${tomcat.password}" path="/${webapp.name}" />
+	</target>
+
+	<target name="reload" description="Reload web application">
+		<reload url="${tomcat.manager.url}" username="${tomcat.username}" password="${tomcat.password}" path="${webapp.name}" />
+	</target>
+
+
+</project>
+
+

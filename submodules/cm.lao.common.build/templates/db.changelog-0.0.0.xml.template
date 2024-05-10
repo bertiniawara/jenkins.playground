@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+	<changeSet id="auto-generated" author="initial.code.generator">
+		<createTable tableName="t_batchtask">
+			<column autoIncrement="false" name="c_id" type="VARCHAR(255)">
+				<constraints nullable="false" primaryKey="true"
+					primaryKeyName="pk_batchtask" />
+			</column>
+			<column name="c_action" type="VARCHAR(255)" />
+			<column name="c_parameters" type="clob" />
+			<column name="c_createdat" type="timestamp" />
+			<column name="c_isimmutable" type="boolean" defaultValueBoolean="false" />
+			<column name="c_deleted" type="boolean" defaultValueBoolean="false" />
+			<column name="c_version" type="int8" defaultValueNumeric="0" />
+			<column name="c_tenant_id" type="VARCHAR(255)" defaultValue="1"/>
+		</createTable>
+	</changeSet>
+</databaseChangeLog>

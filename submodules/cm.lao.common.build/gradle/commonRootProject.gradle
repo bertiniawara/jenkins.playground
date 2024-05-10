@@ -1,0 +1,34 @@
+println 'File: commonRootProject.gradle'
+println "Root project name: '${rootProject.name}'"
+
+ext {
+	gradleTemplatesFolder = 'submodules/cm.lao.common.build/templates'
+}
+
+println gradle
+allprojects {
+	plugins.withType(JavaPlugin) {
+		ext.mainClass = "";
+		test {
+			ignoreFailures = true
+			jvmArgs "-noverify"
+		}
+		//withJavadocJar()
+		//withSourcesJar()
+//		task fatJar(type: Jar) {
+//			if (!mainClass.isEmpty()) {
+//				manifest {
+//					attributes 'Version': version,
+//							'Main-Class': "${mainClass}"
+//				}
+//			}
+//			duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//			baseName = project.name + '-all'
+//			from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+//			with jar
+//		}
+	}
+}
+
+ext.useUnixFileSeparator = { filePath -> return filePath.replace('\\', '/');}
+

@@ -1,0 +1,41 @@
+package cm.lao.${productPackage}.exception;
+
+/**
+ * 
+ */
+public class ${productNameAsCamelCase}Exception extends RuntimeException {
+
+	public static enum Code implements ${productNameAsCamelCase}ExceptionCode {
+		;
+
+		@Override
+		public String stringify() {
+			return name();
+		}
+	}
+
+
+	private ${productNameAsCamelCase}ExceptionCode code;
+
+	public ${productNameAsCamelCase}Exception(String message) {
+		super(message);
+	}
+
+	public ${productNameAsCamelCase}Exception(${productNameAsCamelCase}ExceptionCode code) {
+		super(code.stringify());
+		this.code = code;
+	}
+
+	public ${productNameAsCamelCase}Exception(${productNameAsCamelCase}ExceptionCode code, Throwable cause) {
+		super(code.stringify(), cause);
+		this.code = code;
+	}
+
+	public ${productNameAsCamelCase}Exception(Throwable cause) {
+		super(cause);
+	}
+
+	public ${productNameAsCamelCase}ExceptionCode getCode() {
+		return code;
+	}
+}

@@ -1,0 +1,33 @@
+package cm.lao.${productPackage}.domain;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.MappedSuperclass;
+
+import cm.lao.common.dictionary.DictionaryStructure;
+import cm.lao.common.microservice.domain.BaseDomainObject;
+
+@MappedSuperclass
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public abstract class Base${productNameAsCamelCase}DomainObject extends BaseDomainObject
+		implements ${productNameAsCamelCase}DomainObject<String> {
+
+	protected Base${productNameAsCamelCase}DomainObject() {
+		super();
+	}
+
+	@Override
+	public DictionaryStructure toDictionaryStructure() {
+		return toDictionaryStructure(new HashMap<>());
+	}
+
+	@Override
+	public DictionaryStructure toDictionaryStructure(Map<String, Object> arguments) {
+		throw new RuntimeException("Not Implemented At Yet");
+	}
+
+}
+

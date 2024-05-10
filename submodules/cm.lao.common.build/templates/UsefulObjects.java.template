@@ -1,0 +1,4 @@
+package cm.lao.${productPackage}.util;
+
+public interface UsefulObjects {
+}

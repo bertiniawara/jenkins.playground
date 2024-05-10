@@ -1,0 +1,4 @@
+[submodule "submodules/cm.lao.common.build"]
+        path = submodules/cm.lao.common.build
+        url = git@gitlab.lao-sarl.cm:common/cm.lao.common.build.git
+

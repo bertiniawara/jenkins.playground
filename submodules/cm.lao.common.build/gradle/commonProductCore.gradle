@@ -1,0 +1,38 @@
+println 'File: commonProductCore.gradle'
+
+group = 'lao'
+ext {
+	isJava = true
+}
+
+apply from: '../submodules/cm.lao.common.build/gradle/commonSubprojects.gradle'
+apply from: '../submodules/cm.lao.common.build/gradle/prepareApplicationProperties.gradle'
+
+eclipse {
+	wtp {
+		facet {
+			facet name: 'jpt.jpa', version: '2.1'
+		}
+	}
+}
+
+def infoProperties = [productKey: "${rootProject.name}", productVersion: "${rootProject.version}"];
+task generateInfoPropertiesFile(type: Copy) {
+	description 'LAO. Generates the file info.properties with corresponding values.'
+	doFirst {
+		println "used product key: " + rootProject.name
+		println "used product version: " + rootProject.version
+	}
+	from '../submodules/cm.lao.common.build/templates'
+	into sourceSets.main.resources.srcDirs[0]
+	include 'info.properties.template'
+	rename { file -> file.replace(".template", "") }
+	expand(infoProperties)
+}
+
+
+applicationProperties << [applicationRunningMode: 'unitTest']
+generateApplicationPropertiesFile.into sourceSets.test.resources.srcDirs[0]
+processResources.dependsOn generateInfoPropertiesFile
+test.dependsOn rootProject.clearCrudTestsDatabase
+processTestResources.dependsOn generateApplicationPropertiesFile

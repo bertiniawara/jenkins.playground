@@ -1,0 +1,12 @@
+println 'File: commonSubprojects.gradle'
+
+if (project.isJava) {
+	apply plugin: 'java-library'
+	apply plugin: 'eclipse-wtp'
+} 
+repositories rootProject.laoIvyRepositories
+apply from: '../submodules/cm.lao.common.build/gradle/publishingRepositorySettings.gradle'
+
+test {
+	useJUnitPlatform()
+}

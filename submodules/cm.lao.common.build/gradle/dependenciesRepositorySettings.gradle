@@ -1,0 +1,63 @@
+println "File: dependenciesRepositorySettings.gradle"
+
+def properties = new Properties();
+properties.put("ivyUser", "");
+properties.put("ivyPassword", "");
+
+def credentialsFilePath = System.getenv("LaoIvyCredentialsFilePath");
+if (credentialsFilePath == null) {
+	credentialsFilePath = "credentials.properties";
+} 
+
+def credentialsFile = new File(credentialsFilePath)
+if (credentialsFile.exists()) {
+	properties = new Properties();
+	credentialsFile.withInputStream {
+		stream -> properties.load(stream);
+	}	
+}
+def credentialsData = new ConfigSlurper().parse(properties);
+
+configurations.all {
+	resolutionStrategy {
+		cacheChangingModulesFor 0, 'seconds'
+	}
+}
+
+println "project dependencies ${project.name}"
+ext.laoRepositories = {
+	maven {
+		credentials {
+			username "dev"
+			password "dev"
+		}
+		url "https://nexus.lao-sarl.cm/repository/maven-public/"
+	}
+	if (!project.isRunningOnJenkins) {
+		mavenLocal()
+		ivy {
+			url "${System.properties['user.home']}/.ivy2/local"
+			patternLayout {
+				ivy "[organisation]/[module]/ivys/ivy-[revision].xml"
+				artifact "[organisation]/[module]/[type]s/[artifact]-[revision](-[classifier]).[ext]"
+			}
+		}
+	}
+	ivy {
+		url "https://ivy.lao-sarl.cm/repository"
+		patternLayout {
+			ivy "[organisation]/[module]/ivys/ivy-[revision].xml"
+			artifact "[organisation]/[module]/[type]s/[artifact]-[revision](-[classifier]).[ext]"
+		}
+		credentials {
+			username credentialsData.ivyUser
+			password credentialsData.ivyPassword
+		}
+		authentication {
+			basic(BasicAuthentication)
+		}
+	}
+}
+
+
+repositories laoRepositories

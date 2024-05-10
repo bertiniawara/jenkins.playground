@@ -1,0 +1,115 @@
+plugins {
+    id "org.springframework.boot" version "2.4.3"
+    id "io.spring.dependency-management" version "1.0.11.RELEASE"
+    id "java"
+}
+
+version = '0.0.0'
+apply from: '../submodules/cm.lao.common.build/gradle/commonMicroservice.gradle'
+ext.sourceCompatibility = "11"
+
+
+def buildProfileData = [
+        dbName         : "${productPackageWithUnderscoreSeparator}db",
+        dbPort         : "5432",
+        dbHost         : "localhost",
+        dbSchema       : "public",
+        jdbcUrl        : "jdbc:postgresql://localhost:5432/${productPackageWithUnderscoreSeparator}db",
+        jdbcDriverClass: "org.postgresql.Driver",
+        jdbcUser       : "${productPackageWithUnderscoreSeparator}",
+        jdbcPassword   : "${productPackageWithUnderscoreSeparator}",
+        applicationName: "cm.lao.${productPackage}"
+]
+
+buildProfiles.master << buildProfileData
+buildProfiles.slave1 << buildProfileData
+buildProfiles.slave2 << buildProfileData
+buildProfiles.slave3 << buildProfileData
+buildProfiles.slave4 << buildProfileData
+buildProfiles.slave5 << buildProfileData
+buildProfiles.slave6 << buildProfileData
+buildProfiles.slave7 << buildProfileData
+buildProfiles.slave8 << buildProfileData
+buildProfiles.slave9 << buildProfileData
+buildProfiles.local << buildProfileData
+
+dependencies {
+    implementation "cm.lao.common:microservice:0.6.0"
+    if (!rootProject.isReleaseBuild) {
+        implementation "org.postgresql:postgresql:42.2.4"
+    }
+    testImplementation "cm.lao.common:microservice-testutilities:0.6.0"
+}
+
+tasks.named('test') {
+    jvmArgs "-XX:MaxPermSize=512m", "-javaagent:\${classpath.find { it.name.contains('jmockit') }.absolutePath}"
+}
+
+def e2eEnvironmentVariables = [
+    "DATASOURCE_USERNAME": buildProfileData["jdbcUser"],
+    "DATASOURCE_PASSWORD": buildProfileData["jdbcPassword"],
+    "DATASOURCE_HOST": buildProfileData["dbHost"],
+    "DATASOURCE_PORT": buildProfileData["dbPort"],
+    "DATASOURCE_DB": buildProfileData["dbName"],
+    "LIQUIBASE_CONTEXT": "e2e",
+    "EUREKA_SERVER_PORT": 28960,
+    "EUREKA_SERVER_HOST": "localhost"
+]
+
+task e2eTest() {
+    group = "verification"
+    description = "Execute E2E Tests using Cucumber for spring boot"
+    if (rootProject.isLocal) {
+        dependsOn assemble, testClasses, clearApplicationsDatabasesSchema
+    } else {
+        dependsOn assemble, testClasses
+    }
+    doLast {
+        javaexec {
+            ignoreExitValue = true
+            main = "io.cucumber.core.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            if (rootProject.isLocal) {
+                environment(e2eEnvironmentVariables)
+                args = [
+			'--plugin', 'pretty',
+			'--plugin', 'html:build/cucumber-reports/html/index.html',
+			'--tags', 'not @ignore',
+			'--glue', 'cm.lao.${productPackage}.e2e.config',
+			'--glue', 'cm.lao.${productPackage}.e2e.steps',
+			'src/test/resources'
+                ]
+            } else {
+                args = [
+			'--plugin', 'pretty',
+			'--plugin', 'json:build/cucumber-reports/json/cucumber.json',
+			'--plugin', 'junit:build/cucumber-reports/junit/cucumber.xml',
+			'--tags', 'not @ignore',
+			'--glue', 'cm.lao.${productPackage}.e2e.config',
+			'--glue', 'cm.lao.${productPackage}.e2e.steps',
+			'src/test/resources'
+                ]
+            }
+        }
+    }
+}
+
+task cucumberDryRun {
+    group = "verification"
+    description = "Cucumber Dry Run"
+    dependsOn assemble, testClasses
+    doLast {
+        javaexec {
+            ignoreExitValue = true
+            main = "io.cucumber.core.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            environment(e2eEnvironmentVariables)
+            args = [
+		'--dry-run',
+                '--glue', 'cm.lao.${productPackage}.e2e.config',
+		'--glue', 'cm.lao.${productPackage}.e2e.steps',
+                'src/test/resources'
+            ]
+        }
+    }
+}

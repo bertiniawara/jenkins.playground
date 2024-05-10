@@ -1,0 +1,7 @@
+mail.smtp.host=${mailSmtpHost}
+mail.smtp.auth=${mailSmtpAuth}
+mail.smtp.port=${mailSmtpPort}
+mail.smtp.starttls.enable=${mailSmtpStarttlsEnable}
+mail.user=${mailUser}
+mail.password=${mailPassword}
+mail.from=uum@lao-sarl.cm

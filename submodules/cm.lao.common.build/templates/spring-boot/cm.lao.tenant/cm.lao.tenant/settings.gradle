@@ -1,0 +1,13 @@
+pluginManagement {
+    repositories {
+        maven {
+            credentials {
+                username "dev"
+                password "dev"
+            }
+            url "https://nexus.lao-sarl.cm/repository/maven-public/"
+        }
+        gradlePluginPortal()
+    }
+}
+rootProject.name = "tenant"

@@ -1,0 +1,29 @@
+<project basedir="." default="build" name="ivydemo" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<property name="settings.file" value="ivysettings.xml" />
+	<property name="from.resolver" value="lao.repository" />
+	<property name="to.resolver" value="local" />
+	<property name="ivy.default.ivy.user.dir" value="${user.home}/.ivy2"/>
+	<property name="ivy.local.default.root" value="${ivy.default.ivy.user.dir}/local"/>
+	<property name="ivy.jar.dir" value="${user.home}/.ivy2/jars" />
+	<property name="ivy.file" value="ivy/ivy.xml" />
+	<target name="load-ivy">
+		<echo message="value: ${ivy.local.default.root}"/>
+		<mkdir dir="${ivy.local.default.root}" />
+		<!-- try to load ivy here from home ivy dir, in case the user has not already dropped
+		    	      it into ant's lib dir (note that the latter copy will always take precedence).
+		    	      We will not fail as long as ivy home lib dir exists (it may be empty) and
+		    	      ivy is in at least one of ant's lib dir or the ivy home lib dir. -->
+		<path id="ivy.lib.path">
+			<fileset dir="${ivy.jar.dir}">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path" />
+	</target>
+	<target name="init-ivy" depends="load-ivy">
+		<ivy:settings id="settings" file="${settings.file}" />
+	</target>
+	<target name="build" depends="init-ivy" description="--> retrieve dependencies with ivy">
+		<ivy:install settingsRef="settings" organisation="lao" module="cm.lao.warehouse.ui.gwt" revision="1.2.0" from="${from.resolver}" to="${to.resolver}" transitive="true" overwrite="true" haltonfailure="false" />
+	</target>
+</project>

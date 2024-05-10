@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+
+<project basedir="." default="build" name="common-java" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<dirname property="common-java.basedir" file="${ant.file.common-java}" />
+
+	<property name="main-class" value="" description="the main class to put in the manifest file" />
+	<property name="application.arguments" value="" description="the arguments to pass to the programm at the start time" />
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: pack dependencies with ivy configuration "provided" unless release build                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="packDependenciesWithProvidedIvyConfiguration" unless="${lao.build.isReleaseBuild}">
+		<mkdir dir="${lib.dir}/provided" description="create the provided directory if not exist to avoid build 
+			failing in the case that the gwt module didn't define any provided conf dependencies" />
+		<!-- ? perform the copy of your jars here  -->
+		<move todir="${lib.dir}" verbose="true" description="copy the jars with provided ivy configuration">
+			<fileset dir="${lib.dir}/provided">
+				<include name="*.jar" />
+			</fileset>
+		</move>
+	</target>
+
+	<target name="jar" depends="buildManifest" description="pack all into a war file">
+		<delete dir="${dist.dir}" />
+		<mkdir dir="${dist.dir}" />
+
+		<echo message="pack java app" />
+
+		<antcall target="beforeBuildingArchives" />
+
+		<echo file="install.sh" description="generating the install shell script" message="#!bin/bash${line.separator}" append="false"/>
+		<echo file="install.sh" description="generating the install shell script" message="java -jar ${module.artifact.jar} ${application.arguments}" append="true"/>
+		<echo file="install.bat" description="generating the install batch script" message="java -jar ${module.artifact.jar} ${application.arguments}" append="false"/>
+
+		<move file="install.sh" todir="${dist.dir}" />
+		<move file="install.bat" todir="${dist.dir}" />
+
+		<jar destfile="${dist.dir}/${module.artifact.jar}" basedir="${build.dir}" duplicate="preserve" manifest="${manifest.file.path}" />
+		<move file="${lib.dir}" todir="${dist.dir}" />
+		<zip destfile="${dist.dir}/${module.artifact.all.zip}" basedir="${dist.dir}"/>
+		<move file="${dist.dir}/${lib.dir}" todir="${lib.dir}" />
+		<zip destfile="${dist.dir}/${module.artifact.src.zip}" basedir="${src.dir}" />
+
+		<antcall target="afterBuildingArchives" />
+	</target>
+
+	<target name="buildManifest" depends="moveDependenciesToTheLibDir" description="build up the manifest file">
+
+		<manifestclasspath property="jar.classpath" jarfile="${jar.file}">
+			<classpath refid="dependencies.classpath" />
+		</manifestclasspath>
+
+		<echo message="Build Classpath: ${main-class}" />
+		<echo message="Manifest Classpath: ${jar.classpath}" />
+
+		<manifest file="${manifest.file.path}" mode="update" flattenAttributes="true" mergeClassPathAttributes="true">
+			<attribute name="Main-Class" value="${main-class}" />
+			<attribute name="Class-Path" value=". ${jar.classpath}" />
+		</manifest>
+	</target>
+
+	<target name="moveDependenciesToTheLibDir" depends="common.buildManifest">
+		<antcall target="packDependenciesWithProvidedIvyConfiguration" />
+
+		<move todir="${lib.dir}" verbose="true" description="copy the jar needed at runtime into the lib folder">
+			<fileset dir="${lib.dir}/runtime">
+				<include name="*.jar" />
+			</fileset>
+			<fileset dir="${lib.dir}/runtime">
+				<include name="*.jar" />
+			</fileset>
+		</move>
+
+		<delete includeemptydirs="true">
+			<fileset dir="${lib.dir}">
+				<include name="**/*" />
+				<exclude name="*.jar" />
+			</fileset>
+		</delete>
+
+		<delete includeemptydirs="true">
+			<fileset dir="${lib.dir}">
+				<include name="**/*" />
+				<exclude name="*.jar" />
+			</fileset>
+		</delete>
+
+		<path id="dependencies.classpath">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+	</target>
+
+
+
+	<target name="beforeBuildingArchives" description="Run before packing the artifacts in jar/zip" />
+	<target name="afterBuildingArchives" description="Run after packing the artifacts in jar/zip" />
+
+	<import file="${common-java.basedir}/common.xml" as="common" />
+
+	<target name="collectModuleInfo" depends="common.collectModuleInfo" description="collect information about the module being resolved">
+		<property name="module.artifact.all.zip" value="${ivy.artifact.3.name}.${ivy.artifact.3.ext}" />
+	</target>
+	
+    <target name="setPropertiesNeededForTheCreationOfSymbolicLinks" depends="collectModuleInfo">
+		<property name="artifactToLink" value="${module.organisation}/${module.name}/${ivy.artifact.3.type}s/${ivy.artifact.3.name}-${module.version}.${ivy.artifact.3.ext}"  />
+		<property name="symbolicLinkName" value="${ivy.artifact.3.name}.${ivy.artifact.3.ext}" />
+    </target>
+
+	<target name="build" depends="common.build" />
+
+</project>

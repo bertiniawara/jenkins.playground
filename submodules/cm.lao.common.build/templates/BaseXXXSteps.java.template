@@ -1,0 +1,13 @@
+package cm.lao.${productPackage}.e2e.util;
+
+import cm.lao.common.microservice.testutilities.e2e.BaseSteps;
+import cm.lao.${productPackage}.e2e.steps.${productNameAsCamelCase}Driver;
+
+public abstract class Base${productNameAsCamelCase}Steps extends BaseSteps<${productNameAsCamelCase}Driver> {
+
+	public Base${productNameAsCamelCase}Steps(${productNameAsCamelCase}Driver applicationDriver) {
+		super(applicationDriver);
+	}
+
+}
+

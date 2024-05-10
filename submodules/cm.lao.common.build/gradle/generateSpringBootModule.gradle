@@ -1,0 +1,280 @@
+println "generateSpringBootModule.gradle"
+
+println "generating new module using following data: "
+println "productNameAsCamelCase: ${rootProject.productNameAsCamelCase}"
+println "productPackage: ${rootProject.productPackage}"
+
+ext.productPackageWithUnderscoreSeparator = project.productPackage.replace(".", "_")
+ext.productPackageWithSlashSeparator = project.productPackage.replace(".", "/")
+
+def productProperties = [
+	productNameAsCamelCase: "${rootProject.productNameAsCamelCase}",
+	productPackage: "${rootProject.productPackage}",
+	productPackageWithUnderscoreSeparator: "${rootProject.productPackageWithUnderscoreSeparator}",
+	productPackageWithSlashSeparator: "${rootProject.productPackageWithSlashSeparator}",
+]
+
+def templatesCopySpec = copySpec {
+	from '../templates'
+	expand(productProperties)
+}
+
+ext.copyTemplate = { destination, templateName, targetName ->
+	println "generating ${targetName} for: ${destination}"
+	copy {
+		include templateName
+		into destination
+		rename templateName, targetName
+		with templatesCopySpec
+	}
+}
+
+ext.generateBuildFile = { ->
+	println "generateBuildFile"
+	copy {
+		include "build.gradle.template"
+		into "cm.lao.${productPackage}/cm.lao.${productPackage}"
+		rename "build.gradle.template", "build.gradle"
+		with templatesCopySpec
+	}
+}
+
+ext.generateModule = { ->
+	println "generateModule"
+	ext.mainJava = "cm.lao.${productPackage}/cm.lao.${productPackage}/src/main/java/cm/lao/${productPackageWithSlashSeparator}"
+	ext.mainResources = "cm.lao.${productPackage}/cm.lao.${productPackage}/src/main/resources/cm/lao/${productPackageWithSlashSeparator}"
+	ext.mainResourcesBase = "cm.lao.${productPackage}/cm.lao.${productPackage}/src/main/resources"
+	ext.testJava = "cm.lao.${productPackage}/cm.lao.${productPackage}/src/test/java/cm/lao/${productPackageWithSlashSeparator}"
+	ext.testResources = "cm.lao.${productPackage}/cm.lao.${productPackage}/src/test/resources/cm/lao/${productPackageWithSlashSeparator}"
+	ext.testResourcesBase = "cm.lao.${productPackage}/cm.lao.${productPackage}/src/test/resources"
+
+	mkdir mainJava + "/api"
+	mkdir mainJava + "/config"
+	mkdir mainJava + "/domain"
+	mkdir mainJava + "/exception"
+	mkdir mainJava + "/repository"
+	mkdir mainJava + "/security"
+	mkdir mainJava + "/service"
+	mkdir mainJava + "/util"
+	mkdir mainResources + "/repository/liquibase/changelog"
+	mkdir mainResources + "/templates"
+	mkdir testJava + "/api"
+	mkdir testJava + "/config"
+	mkdir testJava + "/domain"
+	mkdir testJava + "/e2e/config"
+	mkdir testJava + "/e2e/features"
+	mkdir testJava + "/e2e/steps"
+	mkdir testJava + "/e2e/util"
+	mkdir testJava + "/security"
+	mkdir testJava + "/service"
+	mkdir testJava + "/util"
+	mkdir testResources + "/e2e/features"
+	mkdir testResources + "/e2e/steps"
+	mkdir testResources + "/e2e/util"
+
+	generateBuildFile()
+	file("${mainResources}/templates/empty.txt").text = "EMPTY FILE"
+	file("${testResources}/empty.txt").text = "EMPTY FILE"
+}
+
+task build {
+}
+
+task createProjectBuild {
+	doFirst {
+		mkdir "cm.lao.${productPackage}/submodules"
+	}
+	println "createProjectBuild"
+	doLast {
+		generateModule()
+		copy {
+			include "settings.gradle.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}"
+			rename "settings.gradle.template", "settings.gradle"
+			with templatesCopySpec
+		}
+		copy {
+			include "gitignoreRoot.template"
+			into "cm.lao.${productPackage}"
+			rename "gitignoreRoot.template", ".gitignore"
+			with templatesCopySpec
+		}
+		copy {
+			include "gitignoreModule.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}"
+			rename "gitignoreModule.template", ".gitignore"
+			with templatesCopySpec
+		}
+		copy {
+			include "gitmodules.template"
+			into "cm.lao.${productPackage}"
+			rename "gitmodules.template", ".gitmodules"
+			with templatesCopySpec
+		}
+		copy {
+			include "JenkinsfileMicroservice.template"
+			into "cm.lao.${productPackage}"
+			rename "JenkinsfileMicroservice.template", "Jenkinsfile"
+			with templatesCopySpec
+		}
+		copy {
+			include "README.md.template"
+			into "cm.lao.${productPackage}"
+			rename "README.md.template", "README.md"
+			with templatesCopySpec
+		}
+		file("cm.lao.${productPackage}/submodules/submodulesCommand.txt").text = "git submodule add git@gitlab.lao-sarl.cm:common/cm.lao.common.build.git submodules/cm.lao.common.build\n"
+	}
+}
+
+task setupE2e {
+	println "setupE2E"
+	doLast {
+		copy {
+			include "CucumberSpringConfiguration.java.template"
+			into 	testJava + "/e2e/config"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "CucumberTest.java.template"
+			into 	testJava + "/e2e/features"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXDriver.java.template"
+			into 	testJava + "/e2e/steps"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "BaseXXXSteps.java.template"
+			into 	testJava + "/e2e/util"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "Demo.feature.template"
+			into	testResources + "/e2e/features"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "junit-platform.properties.template"
+			into	"cm.lao.${productPackage}/cm.lao.${productPackage}/src/test/resources"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+	}
+}
+
+task setupCore {
+	println "setupCore"
+	doLast {
+		copy {
+			include "XXXApplication.java.template"
+			into 	mainJava
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "BaseXXXResources.java.template"
+			into 	mainJava + "/api"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXBeans.java.template"
+			into 	mainJava + "/config"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXDomainObject.java.template"
+			include "BaseXXXDomainObject.java.template"
+			include "XXXEntity.java.template"
+			include "BaseXXXEntity.java.template"
+			into 	mainJava + "/domain"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "AttributesName.java.template"
+			include "Actions.java.template"
+			include "UsefulObjects.java.template"
+			into 	mainJava + "/util"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXException.java.template"
+			include "XXXExceptionCode.java.template"
+			into 	mainJava + "/exception"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "BaseXXXService.java.template"
+			include "XXXBatchTaskExecutor.java.template"
+			into 	mainJava + "/service"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "eureka-client.properties.template"
+			into	mainResourcesBase
+			rename {filename -> filename.replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "application.yml.template"
+			into	mainResourcesBase
+			rename {filename -> filename.replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "db.changelog-master.xml.template"
+			include "db.changelog-0.0.0.xml.template"
+			into	mainResources + "/repository/liquibase/changelog"
+			rename {filename -> filename.replace("db.changelog-", "").replace(".template", "")}
+			with templatesCopySpec
+		}
+		mkdir mainResources + "/repository/liquibase/changelog/sql"
+		file(mainResources + "/repository/liquibase/changelog/sql/empty.sql").text = "select * from table"
+		file(mainResourcesBase + "/errorMessages.properties").text = ""
+		copy {
+			include "XXXApplicationTest.java.template"
+			into	testJava
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+	}
+}
+
+task setupFakeServices {
+	println "setupFakeServices"
+	copy {
+		from("../templates") {
+			include 'fake-services/**'
+			exclude "fake-services/.env"
+			exclude "fake-services/server/api/eureka.json"
+		}
+		into "cm.lao.${productPackage}"
+		rename {filename -> filename.replace("gitignore", ".gitignore")}
+	}
+	copy {
+		include "fake-services/.env"
+		into "cm.lao.${productPackage}"
+		with templatesCopySpec
+	}
+	copy {
+		include "fake-services/server/api/eureka.json"
+		into "cm.lao.${productPackage}"
+		with templatesCopySpec
+	}
+}
+
+build.dependsOn setupE2e, setupFakeServices
+setupE2e.dependsOn setupCore
+setupCore.dependsOn createProjectBuild

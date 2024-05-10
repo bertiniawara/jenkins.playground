@@ -1,0 +1,11 @@
+package cm.lao.${productPackage}.service;
+
+import cm.lao.common.microservice.service.ApplicationService;
+import cm.lao.${productPackage}.${productNameAsCamelCase}Application;
+
+public abstract class Base${productNameAsCamelCase}Service extends ApplicationService {
+
+	public Base${productNameAsCamelCase}Service() {
+	}
+
+}

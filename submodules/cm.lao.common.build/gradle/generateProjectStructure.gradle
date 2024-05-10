@@ -1,0 +1,43 @@
+def properties = new Properties();
+new File("project.properties").withInputStream {
+	stream -> properties.load(stream);
+}
+def laoProductData = new ConfigSlurper().parse(properties);
+
+def subProjectConformName = ':' + laoProductData.webModuleName
+
+allprojects {
+}
+
+subprojects {
+	apply plugin: 'eclipse'
+	apply plugin: 'java'
+	group = laoProductData.laoProductId
+	version = laoProductData.laoProductVersion
+	repositories {
+		mavenCentral()
+	}
+	sourceSets*.java.srcDirs*.each { it.mkdirs() }
+	sourceSets*.resources.srcDirs*.each { it.mkdirs() }
+	new File("$it.name/build.gradle").createNewFile();
+}
+
+project(subProjectConformName) {
+	apply plugin: 'eclipse-wtp'
+	apply plugin: 'war'
+
+	webAppDir.mkdirs();
+	/*
+	eclipse {
+		project {
+			natures 'com.google.gwt.eclipse.core.gwtNature'
+			buildCommand 'com.google.gdt.eclipse.core.webAppProjectValidator'
+			buildCommand 'com.google.gwt.eclipse.core.gwtProjectValidator'
+		}
+		classpath {
+			containers 'com.google.gwt.eclipse.core.GWT_CONTAINER'
+		}
+	}
+	*/
+}
+

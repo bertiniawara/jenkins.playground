@@ -1,0 +1,21 @@
+DATABASE
+
+First install a postgresql client on your computer. This step is needed because the program "psql"
+is used in our build script.
+To start the database as expected by the application when running locally please execute the following command:
+
+docker run --name postgresql-${productPackageWithUnderscoreSeparator} -p 5432:5432 \
+   -e POSTGRES_USER=${productPackageWithUnderscoreSeparator} \
+   -e POSTGRES_PASSWORD=${productPackageWithUnderscoreSeparator} \
+   -e POSTGRES_DB=${productPackageWithUnderscoreSeparator}db \
+   -d postgres:9.6
+
+FAKE SERVICES
+
+The fake services folder is a nodejs project. So in order to start it, you will need to first install de dependencies with:
+
+npm install
+
+And then start the server with the command:
+
+npm run start:dev

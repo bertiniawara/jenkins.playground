@@ -1,0 +1,11 @@
+package cm.lao.${productPackage}.api;
+
+import cm.lao.common.microservice.api.BaseResources;
+
+abstract class Base${productNameAsCamelCase}Resources extends BaseResources {
+
+	public Base${productNameAsCamelCase}Resources() {
+		super();
+	}
+
+}

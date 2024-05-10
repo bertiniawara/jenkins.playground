@@ -1,0 +1,52 @@
+println 'File: commonProductUiWeb.gradle'
+
+group = 'lao'
+ext {
+	isJava = true
+	isWeb = true
+}
+
+apply plugin: 'war'
+apply from: '../submodules/cm.lao.common.build/gradle/commonSubprojects.gradle'
+apply from: '../submodules/cm.lao.common.build/gradle/prepareWebXml.gradle'
+apply from: '../submodules/cm.lao.common.build/gradle/gretty.gradle'
+
+
+configurations {
+	containerDistribution {
+		description = 'The container binary distributions to be used for the deployment'
+		transitive = false
+	}
+	runtime.exclude module: 'javax.websocket-api'
+}
+
+
+dependencies {
+	if (!rootProject.isReleaseBuild) {
+		implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.4'
+	}
+}
+
+processResources.dependsOn(generateWebXml)
+
+war.excludes = ["**/web-template.xml"]
+war {
+	war.doFirst {
+		manifest = project.getCustomManifest()
+	}
+
+	duplicatesStrategy = 'fail'
+}
+
+project.afterEvaluate {
+	project.tasks.appBeforeIntegrationTest.dependsOn rootProject.clearApplicationsDatabasesSchema
+}
+
+def currentApplicationRunningMode = 'e2e';
+if (rootProject.isReleaseBuild) {
+	currentApplicationRunningMode = 'production';
+}
+applicationProperties << [applicationRunningMode: currentApplicationRunningMode]
+
+generateWebXml.into file(project.webAppDir.absolutePath + "/WEB-INF")
+test.dependsOn generateWebXml

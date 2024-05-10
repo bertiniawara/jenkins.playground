@@ -1,0 +1,22 @@
+<ivysettings>
+	<property name="ivy.checksums" value="" />
+	<properties file="ssh.properties" />
+	<settings defaultResolver="lao.repository" />
+	<resolvers>		
+		<url name="lao.repository">
+			<ivy
+				pattern="http://ivy.lao-sarl.com/repository/[organisation]/[module]/ivys/ivy-[revision].xml" />
+			<artifact
+				pattern="http://ivy.lao-sarl.com/repository/[organisation]/[module]/[type]s/[artifact]-[revision](-[classifier]).[ext]" />
+		</url>
+		<chain name="lao.server" returnFirst="true">
+			<ssh user="${ssh.user}" host="${ssh.host}" userPassword="${ssh.password}"
+				publishPermissions="0754">
+				<ivy
+					pattern="/home/ivymanager/ivysite/repository/[organisation]/[module]/ivys/ivy-[revision].xml" />
+				<artifact
+					pattern="/home/ivymanager/ivysite/repository/[organisation]/[module]/[type]s/[artifact]-[revision](-[classifier]).[ext]" />
+			</ssh>
+		</chain>
+	</resolvers>
+</ivysettings>

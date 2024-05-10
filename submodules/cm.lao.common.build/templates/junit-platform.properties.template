@@ -1,0 +1,8 @@
+cucumber.plugin=pretty,html:build/cucumber-reports/html/index.html
+cucumber.publish.enabled=false
+cucumber.publish.quiet=true
+#cucumber.features=classpath:cm/lao/${productPackage}/e2e/features
+cucumber.glue=cm.lao.${productPackage}.e2e.config,cm.lao.${productPackage}.e2e.steps
+cucumber.execution.dry-run=false
+cucumber.execution.strict=true
+cucumber.filter.tags=

@@ -1,0 +1,41 @@
+{
+  "name": "fake-backend",
+  "version": "0.1.0",
+  "description": "FAKE BACKEND API SERVER",
+  "main": "index.js",
+  "scripts": {
+    "start": "forever start -a -o logs/fake-backend-output.log -e logs/fake-backend-error.log node_modules/cm.bao.common.fake-backend/dist/cm-bao-common-fake_backend.min.js",
+    "start:dev": "nodemon node_modules/cm.bao.common.fake-backend/dist/cm-bao-common-fake_backend.min.js",
+    "stop": "forever stop node_modules/cm.bao.common.fake-backend/dist/cm-bao-common-fake_backend.min.js",
+    "test": "test:unit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.lao-sarl.cm:common/cm.bao.common.fake-backend.git"
+  },
+  "keywords": [
+    "json-server",
+    "fake",
+    "api",
+    "fake",
+    "backend",
+    "REST",
+    "API"
+  ],
+  "author": "LAO SARL <info@lao-sarl.cm> (http://www.lao-sarl.cm)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "dependencies": {
+    "cm.bao.common.fake-backend": "^0.1.9",
+    "dotenv": "^6.2.0",
+    "fast-deep-equal": "^2.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.12.1",
+    "fs": "0.0.1-security",
+    "json-server": "^0.14.2",
+    "nodemon": "^1.18.9"
+  }
+}

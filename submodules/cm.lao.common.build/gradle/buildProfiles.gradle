@@ -1,0 +1,30 @@
+println 'File: buildProfiles.gradle'
+
+def nodeName = System.getenv("NODE_NAME");
+
+ext {
+	set('isRunningOnJenkins', nodeName != null)
+}
+
+ext.isReleaseBuild = isRunningOnJenkins && ((System.getenv("BRANCH_NAME") == "master") || (System.getenv("asReleaseBuild") == "true"))
+ext.isSnapshotBuild = isRunningOnJenkins && System.getenv("BRANCH_NAME") == "develop"
+ext.isControllerBuild = isRunningOnJenkins && !ext.isReleaseBuild && !ext.isSnapshotBuild
+ext.isLocal = !isRunningOnJenkins
+
+println "Is running on Jenkins: ${isRunningOnJenkins}"
+println "Is a release build: ${isReleaseBuild}"
+println "Is a isSnapshotBuild : ${isSnapshotBuild}"
+println "Is a isControllerBuild: ${isControllerBuild}"
+println "Release build file: ${isReleaseBuild}.isReleaseBuild"
+
+if (isRunningOnJenkins) {
+	file(System.getenv("WORKSPACE") + "/${isReleaseBuild}.isReleaseBuild").write "Release ${version}";
+	def environmentVariablesGeneratedByBuildFile = file(System.getenv("WORKSPACE") + "/environmentVariablesGeneratedByBuild.properties");
+	environmentVariablesGeneratedByBuildFile.write "RELEASE_VERSION=${version}\n"
+}
+
+def projetRootDir = "";
+if (project.hasProperty("isCommonModule") && project.isCommonModule) {
+	projetRootDir = "../"
+}
+

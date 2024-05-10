@@ -1,0 +1,39 @@
+spring:
+  config:
+    import: "optional:configserver:"
+  datasource:
+    url: jdbc:tc:postgresql:14.5:///playground_e2e
+    driver-class-name:
+  liquibase:
+    contexts: e2e
+  jpa:
+    show-sql: true
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers:
+    kubernetes:
+      discovery:
+        enabled: false
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+lao:
+  encryption:
+    secret-key: cMW5qdPTNxZo2EFIXIv8zqKeCf3NM/OiajGO6LGB2CE=
+    initialization-vector: K/XJTwnd7ecCqpcJXv7iVA==
+  tenant:
+    current: 1
+    uri: "http://localhost:${wiremock.server.port}"
+  service:
+    messaging:
+      uri: "http://localhost:${wiremock.server.port}"
+    saa:
+      uri: "http://localhost:${wiremock.server.port}"
+
+  cache:
+    hazelcast:
+      cluster:
+        name: dev

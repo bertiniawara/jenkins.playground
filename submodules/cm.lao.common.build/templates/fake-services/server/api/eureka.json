@@ -1,0 +1,72 @@
+{
+	"name": "",
+	"urls": [
+		{
+			"path": "v2/apps",
+			"requests": [
+				{
+					"method": "GET",
+					"response": {
+						"statusCode": 200,
+						"body": {
+							"applications": {
+								"applications": {
+									"versions__delta": "1",
+									"apps__hashcode": "UP_7_",
+									"application": [
+										{
+											"name": "CM_LAO_ZUUL",
+											"instance": [
+												{
+													"instanceId": "localhost",
+													"hostName": "localhost",
+													"app": "CM_LAO_ZUUL",
+													"ipAddr": "127.0.0.1",
+													"status": "UP",
+													"overriddenStatus": "UNKNOWN",
+													"port": {
+														"\$": 28960,
+														"@enabled": "true"
+													},
+													"securePort": {
+														"\$": 443,
+														"@enabled": "false"
+													},
+													"countryId": 1,
+													"dataCenterInfo": {
+														"@class": "com.netflix.appinfo.InstanceInfo\$DefaultDataCenterInfo",
+														"name": "MyOwn"
+													},
+													"leaseInfo": {
+														"renewalIntervalInSecs": 30,
+														"durationInSecs": 90,
+														"registrationTimestamp": 1569890009040,
+														"lastRenewalTimestamp": 1570831265644,
+														"evictionTimestamp": 0,
+														"serviceUpTimestamp": 1569890008622
+													},
+													"metadata": {
+														"@class": "java.util.Collections\$EmptyMap"
+													},
+													"appGroupName": "UNKNOWN",
+													"homePageUrl": "http://localhost:28960/",
+													"statusPageUrl": "http://localhost:28960/Status",
+													"healthCheckUrl": "http://localhost:28960/healthcheck",
+													"vipAddress": "cm_lao_zuul",
+													"isCoordinatingDiscoveryServer": "true",
+													"lastUpdatedTimestamp": "1569890009040",
+													"lastDirtyTimestamp": "1569890008595",
+													"actionType": "ADDED"
+												}
+											]
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			]
+		}
+	]
+}

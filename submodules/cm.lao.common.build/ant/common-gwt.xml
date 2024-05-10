@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+
+<project basedir="." default="build" name="common-gwt" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<dirname property="common-gwt.basedir" file="${ant.file.common-gwt}" />
+	<property name="webContent.dir" value="WebContent" />
+	<property name="build.dir" value="${webContent.dir}/WEB-INF/classes" />
+	<property name="lib.dir" value="${webContent.dir}/WEB-INF/lib" />
+	<property name="gwtc.jvmarg.Xmx" value="256" />
+
+	<!-- ? fill gwt module -->
+	<property name="gwt.module.id.release" value="" />
+	<property name="gwt.module.id.dev" value="" />
+
+	<property name="application.properties.file" value="${build.dir}/application.properties" />
+	<property name="shouldConfigureApplicationPropertiesFile" value="false" />
+
+	<path id="gwt.compiler.classpath">
+		<fileset dir="${lib.dir}">
+			<include name="gwt-compile/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="compile-test" depends="gwtc">
+		<!-- copy utilities file (e.g: *.properties ) -->
+		<copy includeemptydirs="false" todir="${test.build.dir}" verbose="true">
+			<fileset dir="${test.src.dir}">
+				<exclude name="**/*.launch" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+
+		<echo message="compiling test sources" />
+		<javac debug="true" debuglevel="${debuglevel}" destdir="${test.build.dir}" source="${source}" target="${target}" includeantruntime="false">
+			<src path="${test.src.dir}" />
+			<classpath refid="test.classpath" />
+		</javac>
+	</target>
+
+	<target name="computeModuleId" depends="setModuleIdToDev, setModuleIdToRelease" />
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: setModuleIdToRelease                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="setModuleIdToRelease" if="${lao.build.isReleaseBuild}">
+		<property name="gwt.module.id" value="${gwt.module.id.release}" />
+		<property name="gwt.outputStyle" value="obfuscated" />
+		<antcall target="configureApplicationPropertiesFile">
+			<param name="application.runningMode" value="production"/>
+		</antcall>
+	</target>
+
+	<!-- ================================= 
+          target: configureApplicationPropertiesFile              
+         ================================= -->
+	<target name="configureApplicationPropertiesFile" if="${shouldConfigureApplicationPropertiesFile}" description="configure application properties file">
+		<propertyfile file="${application.properties.file}">
+			<entry key="application.home" value="" />
+			<entry key="application.runningMode" value="${application.runningMode}" />
+		</propertyfile>
+	</target>
+
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: setModuleIdToDev                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="setModuleIdToDev" unless="${lao.build.isReleaseBuild}">
+		<property name="gwt.module.id" value="${gwt.module.id.dev}" />
+		<property name="gwt.outputStyle" value="pretty" />
+		<antcall target="configureApplicationPropertiesFile">
+			<param name="application.runningMode" value="e2e"/>
+		</antcall>
+	</target>
+
+	<target name="gwtc" depends="compile, computeModuleId">
+		<echo message="performing compilation to javascript of the module '${gwt.module.id}'..." />
+		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+			<classpath>
+				<pathelement location="${src.dir}" />
+				<pathelement location="${build.dir}" />
+				<path refid="gwt.compiler.classpath" />
+			</classpath>
+			<arg value="-war" />
+			<arg value="${webContent.dir}" />
+			<arg value="-style" />
+			<arg value="${gwt.outputStyle}" />
+			<!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
+
+			<arg value="${gwt.module.id}" />
+			<!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
+			<jvmarg value="-Xmx${gwtc.jvmarg.Xmx}M" />
+		</java>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: pack dependencies with ivy configuration "provided" unless release build                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="packDependenciesWithProvidedIvyConfiguration" unless="${lao.build.isReleaseBuild}">
+		<mkdir dir="${lib.dir}/provided" description="create the provided directory if not exist to avoid build 
+			failing in the case that the gwt module didn't define any provided conf dependencies" />
+		<!-- ? perform the copy of your jars here  -->
+		<move todir="${lib.dir}" verbose="true" description="copy the jars with provided ivy configuration">
+			<fileset dir="${lib.dir}/provided">
+				<include name="*.jar" />
+			</fileset>
+		</move>
+	</target>
+
+	<target name="jar" depends="buildManifest" description="pack all into a war file">
+		<delete dir="${dist.dir}" />
+		<mkdir dir="${dist.dir}" />
+
+		<!-- remove all .java and .ui.xml file -->
+		<delete description="remove all .java files" verbose="true">
+			<fileset dir="${build.dir}">
+				<include name="**/*.java" />
+				<include name="**/*.ui.xml" />
+				<include name="**/jetty-web.xml" />
+			</fileset>
+			<fileset dir="${webContent.dir}">
+				<include name="**/jetty-web.xml" />
+			</fileset>
+		</delete>
+		<!-- put all in a war -->
+		<echo message="pack web app into a war file" />
+		<!-- copy needed sever side libraries to lib directory -->
+
+		<!-- ? perform the copy of your jars here  -->
+		<move todir="${lib.dir}" verbose="true" description="copy the jar needed at runtime into the lib folder">
+			<fileset dir="${lib.dir}/runtime">
+				<include name="*.jar" />
+			</fileset>
+		</move>
+
+		<antcall target="packDependenciesWithProvidedIvyConfiguration" />
+
+		<delete includeemptydirs="true">
+			<fileset dir="${lib.dir}">
+				<include name="**/*" />
+				<exclude name="*.jar" />
+			</fileset>
+		</delete>
+
+		<antcall target="beforeBuildingArchives" />
+		<jar destfile="${dist.dir}/${module.artifact.war}" basedir="${webContent.dir}" duplicate="preserve" manifest="${manifest.file.path}" />
+		<jar destfile="${dist.dir}/${module.artifact.jar}" basedir="${build.dir}" duplicate="preserve" manifest="${manifest.file.path}" />
+		<zip destfile="${dist.dir}/${module.artifact.src.zip}" basedir="${src.dir}" />
+		<antcall target="afterBuildingArchives" />
+	</target>
+
+	<target name="beforeBuildingArchives" description="Run before packing the artifacts in jar/zip" />
+	<target name="afterBuildingArchives" description="Run after packing the artifacts in jar/zip" />
+
+	<import file="${common-gwt.basedir}/common.xml" as="common" />
+
+	<target name="collectModuleInfo" depends="common.collectModuleInfo" description="collect information about the module being resolved">
+		<property name="module.artifact.war" value="${ivy.artifact.3.name}.${ivy.artifact.3.ext}" />
+	</target>
+
+	<target name="setPropertiesNeededForTheCreationOfSymbolicLinks" depends="collectModuleInfo">
+		<property name="artifactToLink" value="${module.organisation}/${module.name}/${ivy.artifact.3.type}s/${ivy.artifact.3.name}-${module.version}.${ivy.artifact.3.ext}" />
+		<property name="symbolicLinkName" value="${ivy.artifact.3.name}.${ivy.artifact.3.ext}" />
+	</target>
+
+	<target name="build" depends="common.build" />
+
+</project>

@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://\${DATASOURCE_HOST}:\${DATASOURCE_PORT}/\${DATASOURCE_DB}
+    username: \${DATASOURCE_USERNAME}
+    password: \${DATASOURCE_PASSWORD}
+
+  liquibase:
+    change-log: classpath:cm/lao/${productPackage}/repository/liquibase/changelog/master.xml
+    enabled: true
+    contexts: \${LIQUIBASE_CONTEXT}
+
+  kafka:
+    topic:
+      prefix: \${PRODUCT}
+
+    consumer:
+      bootstrap-servers: \${KAFKA_URL}
+      auto-offset-reset: earliest
+      group-id: \${PRODUCT}.cm.lao.${productPackage}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: cm.lao.common.microservice.util.kafka.DictionaryStructureDeserializer
+
+    producer:
+      bootstrap-servers: \${KAFKA_URL}
+      key-serializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-serializer: cm.lao.common.microservice.util.kafka.DictionaryStructureDeserializer
+

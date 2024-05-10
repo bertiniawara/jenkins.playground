@@ -1,0 +1,15 @@
+package cm.lao.${productPackage}.e2e.steps;
+
+import cm.lao.common.microservice.testutilities.e2e.BaseDriver;
+
+import io.cucumber.spring.ScenarioScope;
+import org.springframework.stereotype.Component;
+
+@Component
+@ScenarioScope
+public class ${productNameAsCamelCase}Driver extends BaseDriver {
+
+	public ${productNameAsCamelCase}Driver() {
+	}
+
+}

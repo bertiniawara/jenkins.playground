@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file. Any modifications will be overwritten. 
+	To include a user specific buildfile here, simply create one in the same 
+	directory with the processing instruction <?eclipse.ant.import?> as the first 
+	entry and export the buildfile again. -->
+
+<project basedir="." default="build" name="common" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<property environment="env" />
+	<property name="company" value="LAO SARL" />
+	<property name="dist.dir" value="dist" />
+	<property name="build.dir" value="bin" />
+	<property name="lib.dir" value="lib" />
+	<property name="test.build.dir" value="binForTests" />
+	<property name="src.dir" value="src" />
+	<property name="test.src.dir" value="test" />
+	<property name="manifest.file.path" value="${build.dir}/MANIFEST.MF" />
+	<property name="logFiles.dir" value="../logs" />
+	<property name="logFiles.pattern.1" value="**/*.log" />
+	<property name="logFiles.pattern.2" value="**/*.log.*" />
+
+	<property name="junit.unitTestsRoot" value="" description="test class full name (set it in the project build file)" />
+	<property name="junit.output.dir" value="junit" />
+	<property name="junit.jvmarg.MaxPermSize" value="128" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="target" value="1.6" />
+	<property name="source" value="1.6" />
+
+	<property name="ivy.settings.file" value="${env.WORKSPACE}/submodules/cm.lao.common.build/ivy/ci/ivysettings.xml" />
+	<property name="ivy.ssh.file" value="${env.WORKSPACE}/submodules/cm.lao.common.build/ivy/ci/ssh.properties" />
+	<property name="ivy.cache.dir" value="${basedir}/cache" />
+	<property name="ivy.jar.dir" value="${user.home}/.ivy2/jars" />
+	<property name="ivy.file" value="ivy/ivy.xml" />
+	<property name="ivy.retrieve.pattern" value="${lib.dir}/[conf]/[artifact]-[revision](-[classifier]).[ext]" />
+
+	<property name="info.properties.file" value="${build.dir}/info.properties" />
+	<property name="product.key" value="cm.lao.product" />
+	<property name="shouldConfigureApplicationPropertiesFile" value="false" />
+
+	<path id="classpath">
+		<pathelement location="${build.dir}" />
+		<fileset dir="${lib.dir}">
+			<include name="compile/*.jar" />
+			<include name="provided/*.jar" />
+		</fileset>
+	</path>
+
+	<path id="test.classpath">
+		<pathelement location="${build.dir}" />
+		<pathelement location="${test.build.dir}" />
+		<fileset dir="${lib.dir}">
+			<include name="test/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="load-ivy">
+		<!-- try to load ivy here from home ivy dir, in case the user has not already 
+			dropped it into ant's lib dir (note that the latter copy will always take 
+			precedence). We will not fail as long as ivy home lib dir exists (it may 
+			be empty) and ivy is in at least one of ant's lib dir or the ivy home lib 
+			dir. -->
+		<path id="ivy.lib.path">
+			<fileset dir="${ivy.jar.dir}">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path" />
+	</target>
+
+
+	<target name="build" depends="createSymbolicLink" description="">
+		<delete dir="${logFiles.dir}" />
+		<mkdir dir="${logFiles.dir}" />
+		<copy includeemptydirs="false" todir="${logFiles.dir}" verbose="true" failonerror="false" description="copying log files">
+			<fileset dir="." includes="${logFiles.pattern.1}" />
+			<fileset dir="." includes="${logFiles.pattern.2}" />
+		</copy>
+		<delete description="clearing log files">
+			<fileset dir="." includes="${logFiles.pattern.1}" />
+			<fileset dir="." includes="${logFiles.pattern.2}" />
+		</delete>
+		<antcall target="clean-dependencies" />
+	</target>
+
+	<target name="publish" depends="jar" description="--> publish this project in the ivy repository">
+		<ivy:publish artifactspattern="${dist.dir}/[artifact].[ext]" resolver="lao.server" pubrevision="${module.version}" status="${module.status}" overwrite="true" settingsref="ivy.repository.lao" />
+		<echo message="project ${module.name} released with version ${module.version}" />
+	</target>
+
+	<target name="createSymbolicLink" depends="publish" description="--> Create symbolic on the last release" if="${lao.build.isReleaseBuild}">
+		<property file="${ivy.ssh.file}" />
+		<exec executable="/usr/bin/sshpass">
+			<arg value="-p" />
+			<arg value="${ssh.password}" />
+			<arg value="ssh" />
+			<arg value="${ssh.user}@${ssh.host}" />
+			<arg value="sh" />
+			<arg value="/home/ivymanager/.scripts/create-symbolic-link-to-latest-release.sh" />
+			<arg value="${artifactToLink}" />
+			<arg value="${symbolicLinkName}" />
+		</exec>
+		<echo message="link to the release file has been created" />
+	</target>
+
+	<target name="jar" depends="buildManifest" description="pack the binary in a jar">
+		<delete dir="${dist.dir}" />
+		<mkdir dir="${dist.dir}" />
+
+		<antcall target="beforeBuildingArchives" />
+		<jar destfile="${dist.dir}/${module.artifact.jar}" basedir="${build.dir}" manifest="${manifest.file.path}" />
+		<zip destfile="${dist.dir}/${module.artifact.src.zip}" basedir="${src.dir}" />
+		<antcall target="afterBuildingArchives" />
+	</target>
+
+	<target name="beforeBuildingArchives" description="Run before packing the artifacts in jar/zip" />
+	<target name="afterBuildingArchives" description="Run after packing the artifacts in jar/zip" />
+
+	<target name="buildManifest" depends="AllUnitTests" description="build up the manifest file">
+		<tstamp>
+			<format property="TODAY" pattern="yyyy-MM-dd_hh:mm:ss" />
+		</tstamp>
+
+		<echo message="Manifest data-----------" />
+		<echo message="Title: ${module.name}" />
+		<echo message="Version: ${ivy.revision}" />
+		<echo message="Vendor: ${company}" />
+		<echo message="Date: ${TODAY}" />
+		<echo message="Git-Repository-Version: ${env.GIT_COMMIT}" />
+		<echo message="Build-Number: ${env.BUILD_NUMBER}" />
+		<echo message="Manifest data-----------" />
+
+		<manifest file="${manifest.file.path}">
+			<attribute name="Title" value="${module.name}" />
+			<attribute name="Version" value="${ivy.revision}" />
+			<attribute name="Vendor" value="${company}" />
+			<attribute name="Date" value="${TODAY}" />
+			<attribute name="Git-Repository-Version" value="${env.GIT_COMMIT}" />
+			<attribute name="Build-Number" value="${env.BUILD_NUMBER}" />
+		</manifest>
+	</target>
+
+	<target name="AllUnitTests" depends="compile-test" description="run the tests">
+		<mkdir dir="${junit.output.dir}" />
+		<junit fork="yes" printsummary="withOutAndErr" showoutput="yes">
+			<jvmarg value="-XX:MaxPermSize=${junit.jvmarg.MaxPermSize}m" />
+			<jvmarg value="-noverify" />
+			<jvmarg value="-XX:+UseSerialGC" />
+			<classpath refid="test.classpath" />
+			<formatter type="plain" usefile="false" />
+			<formatter type="xml" />
+			<test name="${junit.unitTestsRoot}" todir="${junit.output.dir}" />
+		</junit>
+	</target>
+
+	<target name="compile-test" depends="compile">
+		<!-- copy utilities file (e.g: *.properties ) -->
+		<copy includeemptydirs="false" todir="${test.build.dir}" verbose="true">
+			<fileset dir="${test.src.dir}">
+				<exclude name="**/*.launch" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+
+		<echo message="compiling test sources" />
+		<javac debug="true" debuglevel="${debuglevel}" destdir="${test.build.dir}" source="${source}" target="${target}" includeantruntime="false">
+			<src path="${test.src.dir}" />
+			<classpath refid="test.classpath" />
+		</javac>
+	</target>
+
+
+	<!-- ================================= 
+          target: configureApplicationPropertiesFile              
+         ================================= -->
+	<target name="configureApplicationPropertiesFile" if="${shouldConfigureApplicationPropertiesFile}" description="configure application properties file">
+		<propertyfile file="${info.properties.file}">
+			<entry key="product.key" value="${product.key}" />
+			<entry key="product.version" value="${ivy.revision}" />
+		</propertyfile>
+	</target>
+
+	<target name="compile" depends="copySomeSourceIntoBuildDir, computeIsReleaseBuild, configureApplicationPropertiesFile" description="compile the project">
+		<!-- copy utilities file (e.g: *.properties) -->
+		<copy includeemptydirs="false" todir="${build.dir}" verbose="true">
+			<fileset dir="${src.dir}">
+				<exclude name="**/*.launch" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+
+		<echo message="compiling sources" />
+		<javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}" includeantruntime="false">
+			<src path="${src.dir}" />
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<target name="copySomeSourceIntoBuildDir" depends="clean-dependencies" description="useful for gwt compilation or whenever source files are needed at compiled time" />
+
+	<target name="resolve-dependencies" depends="clean-dependencies, setPropertiesNeededForTheCreationOfSymbolicLinks, load-ivy">
+		<echo message="organisation: ${ivy.organisation}" />
+		<echo message="module: ${ivy.module}" />
+		<echo message="revision: ${ivy.revision}" />
+		<echo message="status: ${ivy.status}" />
+		<echo message="artifact: ${ivy.artifact.1.name}" />
+		<echo message="extension: ${ivy.artifact.1.ext}" />
+
+		<ivy:settings id="ivy.repository.lao" file="${ivy.settings.file}" />
+		<ivy:retrieve pattern="${ivy.retrieve.pattern}" file="${ivy.file}" settingsref="ivy.repository.lao" />
+	</target>
+
+	<target name="computeIsReleaseBuild" depends="resolve-dependencies">
+		<condition property="lao.build.isReleaseBuild" value="true" else="false">
+			<equals arg1="${env.branch}" arg2="master" trim="true" />
+		</condition>
+		<echo message="is release build?: '${lao.build.isReleaseBuild}' for branch '${env.branch}'" />
+		<delete quiet="true">
+			<fileset dir="${env.WORKSPACE}" includes="*.isReleaseBuild" />
+		</delete>
+		<property name="lao.build.isReleaseBuildFileLocation" value="${env.WORKSPACE}/${lao.build.isReleaseBuild}.isReleaseBuild" />
+		<touch file="${lao.build.isReleaseBuildFileLocation}" />
+		<echo message="Release ${module.version}" file="${lao.build.isReleaseBuildFileLocation}" />
+	</target>
+
+	<target name="computeShouldPublishIntoIvyRepository" depends="resolve-dependencies">
+		<condition property="lao.build.shouldPublishIntoIvyRepository" value="true" else="false">
+			<or>
+				<equals arg1="${env.branch}" arg2="master" trim="true" />
+				<equals arg1="${env.branch}" arg2="develop" trim="true" />
+			</or>
+		</condition>
+		<echo message="should publish into ivy repository?: '${lao.build.shouldPublishIntoIvyRepository}' for branch '${env.branch}'" />
+	</target>
+
+
+	<!-- ================================= target: collectModuleInfo ================================= -->
+	<target name="collectModuleInfo" depends="load-ivy" description="collect information about the module being resolved">
+		<ivy:info file="${ivy.file}" />
+		<property name="module.organisation" value="${ivy.organisation}" />
+		<property name="module.name" value="${ivy.module}" />
+		<property name="module.version" value="${ivy.revision}" />
+		<property name="module.status" value="${ivy.status}" />
+		<property name="module.artifact.jar" value="${ivy.artifact.1.name}.${ivy.artifact.1.ext}" />
+		<property name="module.artifact.src.zip" value="${ivy.artifact.2.name}.${ivy.artifact.2.ext}" />
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: declare symbolic link file creation data                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="setPropertiesNeededForTheCreationOfSymbolicLinks" depends="collectModuleInfo">
+		<property name="artifactToLink" value="${module.organisation}/${module.name}/${ivy.artifact.1.type}s/${ivy.artifact.1.name}-${module.version}.${ivy.artifact.1.ext}" />
+		<property name="symbolicLinkName" value="${ivy.artifact.1.name}.${ivy.artifact.1.ext}" />
+	</target>
+
+
+
+	<target name="clean-dependencies" description="clean dependencies jar">
+		<echo message="ant version: ${ant.version}" />
+		<echo message="Git Repository Branch being built: ${env.GIT_BRANCH}" />
+		<delete dir="${lib.dir}" quiet="true" />
+		<delete dir="${build.dir}" quiet="true" />
+		<delete dir="${test.build.dir}" quiet="true" />
+		<delete dir="${ivy.cache.dir}" quiet="true" />
+		<mkdir dir="${lib.dir}" />
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${test.build.dir}" />
+	</target>
+</project>

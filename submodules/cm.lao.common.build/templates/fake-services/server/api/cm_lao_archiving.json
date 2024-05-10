@@ -1,0 +1,203 @@
+{
+  "name": "cm_lao_archiving",
+  "urls": [
+    {
+      "path": "/document/b5d98c7d0aa8499c87179c9d2c7316ab",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-2.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/5d22d1f5c5a148e0b5bc21b9363057be",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/response-files/archiving/img-1.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/02935a872dc24271974037658f55afea",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-3.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/4ee221d0d6264f4297046775ffae35c0",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-4.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/570c3e7681e147e6847bd499a09901b1",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-5.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/b42dc279d4e149a09471ec9b7bebc2ec",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-6.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/24b0075f4d8a470c87462e745b82cc3a",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-7.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/83d730e2c27e41dc8b164f9b5c09d6b0",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-8.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/9ac0627b69d64ad6867182b2cd4e8d26",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-9.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/c02ebb17b16442fab3832cfbf99f8bf8",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-10.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/5db83824b6894fdeaa11b5df55da304f",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-11.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/8a4e700f8bcc47609bc8d4db237dc1ba",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-12.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/770f17a2abde40eab3f4936d3448c501",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-13.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/6c12cb3d71aa4c42b1c253e952d17209",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-14.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/9bbbe8f325cf48cc87dbf7c9e919c407",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-15.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/9e3195667f334aa6a0def182b72b9b27",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-16.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/e807c4d174db41c79bd5f9f9efd33c15",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-17.png",
+          "sendFile": true
+        }
+      }]
+    },
+    {
+      "path": "/document/22fef0871fc0417baedcd5052f88027f",
+      "requests": [{
+        "method": "GET",
+        "response": {
+          "statusCode": 200,
+          "body": "/reponse-files/archiving/img-18.png",
+          "sendFile": true
+        }
+      }]
+    }
+  ]
+}

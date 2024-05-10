@@ -1,0 +1,34 @@
+println 'File: commonMicroservice.gradle'
+
+group = 'cm.lao'
+ext.isCommonModule = false
+ext.isJava = true
+ext.isWeb = false
+ext.isMicroservice = true
+
+apply from: "../submodules/cm.lao.common.build/gradle/buildProfiles.gradle"
+apply from: "../submodules/cm.lao.common.build/gradle/dependenciesRepositorySettings.gradle"
+apply from: '../submodules/cm.lao.common.build/gradle/commonRootProject.gradle'
+apply from: "../submodules/cm.lao.common.build/gradle/publishingRepositorySettings.gradle"
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testImplementation
+    }
+}
+
+publish.dependsOn(bootJar)
+
+tasks.named('test') {
+    useJUnitPlatform()
+    filter {
+        excludeTestsMatching "UnknownClass.*"
+    }
+}
+
+if (project.tasks.findByName('e2eTest')) {
+    tasks.named("check") {
+        dependsOn e2eTest
+    }
+}
+

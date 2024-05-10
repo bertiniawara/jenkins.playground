@@ -1,0 +1,28 @@
+println 'File: javascriptApp.gradle'
+
+ext.releaseBuildBashScript = "npmBuild.sh"
+ext.controllerBuildBashScript = "npmBuildApp.sh"
+
+apply from: '../submodules/cm.lao.common.build/gradle/javaScriptCommon.gradle'
+apply from: '../submodules/cm.lao.common.build/gradle/dependenciesRepositorySettings.gradle'
+apply from: '../submodules/cm.lao.common.build/gradle/publishingRepositorySettings.gradle'
+
+if (ext.isSnapshotBuild) {
+	ext.bashArguments.add("runBuild");
+}
+
+task packageDistribution(type: Zip) {
+  doFirst {
+    delete outputDir
+    mkdir outputDir
+  }
+  archiveName = "${rootProject.name}.zip"
+  destinationDir = file(outputDir)
+  from "dist"
+}
+
+task build {
+  dependsOn packageDistribution
+}
+
+publish.dependsOn build

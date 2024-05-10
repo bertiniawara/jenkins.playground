@@ -1,0 +1,1 @@
+git submodule add git@gitlab.lao-sarl.cm:common/cm.lao.common.build.git submodules/cm.lao.common.build

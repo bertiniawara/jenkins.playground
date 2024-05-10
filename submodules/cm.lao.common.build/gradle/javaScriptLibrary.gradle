@@ -1,0 +1,10 @@
+println 'File: javaScriptLibrary.gradle'
+
+ext.releaseBuildBashScript = "npmBuildPublish.sh"
+ext.controllerBuildBashScript = "npmBuildLibrary.sh"
+
+apply from: '../submodules/cm.lao.common.build/gradle/javaScriptCommon.gradle'
+
+task build {
+  dependsOn compile
+}

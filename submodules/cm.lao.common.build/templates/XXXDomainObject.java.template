@@ -1,0 +1,9 @@
+package cm.lao.${productPackage}.domain;
+
+import java.io.Serializable;
+
+import cm.lao.common.microservice.domain.DomainObject;
+
+public interface ${productNameAsCamelCase}DomainObject extends DomainObject {
+
+}

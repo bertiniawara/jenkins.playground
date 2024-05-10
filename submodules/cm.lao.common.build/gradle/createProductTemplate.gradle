@@ -1,0 +1,407 @@
+println "createProductTemplate.gradle"
+
+println "generating new module using following data: "
+println "productNameAsCamelCase: ${rootProject.productNameAsCamelCase}"
+println "productPackage: ${rootProject.productPackage}"
+println "fake-services port: ${rootProject.fakeServicesPort}"
+
+ext.productPackageWithUnderscoreSeparator = project.productPackage.replace(".", "_")
+ext.productPackageWithSlashSeparator = project.productPackage.replace(".", "/")
+
+def productProperties = [
+	productNameAsCamelCase: "${rootProject.productNameAsCamelCase}",
+	productPackage: "${rootProject.productPackage}",
+	productPackageWithUnderscoreSeparator: "${rootProject.productPackageWithUnderscoreSeparator}",
+	productPackageWithSlashSeparator: "${rootProject.productPackageWithSlashSeparator}",
+	fakeServicesPort: "${rootProject.fakeServicesPort}",
+	LOG_PATTERN: "\${LOG_PATTERN}",
+	LOG_FILE: "\${LOG_FILE}",
+	homeDirPlaceHolder: "\${web:initParam.lao.application.home}",
+	NETFLIX_LOG_FILE: "\${NETFLIX_LOG_FILE}",
+	webXmlDisplayName: "\${webXmlDisplayName}",
+	contextListenerClass: "\${contextListenerClass}",
+	genericRemoteServiceClass: "\${genericRemoteServiceClass}",
+	restServiceApplication: "\${restServiceApplication}",
+	applicationHome: "\${applicationHome}",
+	applicationRunningMode: "\${applicationRunningMode}",
+	applicationWebSocketPort: "\${applicationWebSocketPort}",
+	applicationWebSocketSessionTimeout: "\${applicationWebSocketSessionTimeout}",
+	applicationBaseUrl: "\${applicationBaseUrl}",
+	contextPathBase: "\${contextPathBase}"
+]
+
+def templatesCopySpec = copySpec {
+	from '../templates'
+	expand(productProperties)
+}
+
+ext.copyTemplate = { destination, templateName, targetName ->
+	println "generating ${targetName} for: ${destination}"
+	copy {
+		include templateName
+		into destination
+		rename templateName, targetName
+		with templatesCopySpec
+	}
+}
+
+ext.generateBuildFile = { destinationFolder, buildTemplateFile ->
+	copy {
+		include buildTemplateFile
+		into destinationFolder
+		rename buildTemplateFile, "build.gradle"
+		with templatesCopySpec
+	}
+}
+
+ext.generateModule = { moduleName, buildTemplateName ->
+	productProperties['moduleName'] = moduleName;
+
+	def moduleNameWithoutDot = moduleName.replace(".", "/");
+	def mainJava = "cm.lao.${productPackage}/cm.lao.${productPackage}.${moduleName}/src/main/java/cm/lao/${productPackageWithSlashSeparator}/${moduleNameWithoutDot}";
+	def mainResources = "cm.lao.${productPackage}/cm.lao.${productPackage}.${moduleName}/src/main/resources/cm/lao/${productPackageWithSlashSeparator}/${moduleNameWithoutDot}";
+	def testJava = "cm.lao.${productPackage}/cm.lao.${productPackage}.${moduleName}/src/test/java/cm/lao/${productPackageWithSlashSeparator}/${moduleNameWithoutDot}";
+	def testResources = "cm.lao.${productPackage}/cm.lao.${productPackage}.${moduleName}/src/test/resources/cm/lao/${productPackageWithSlashSeparator}/${moduleNameWithoutDot}";
+
+	mkdir mainJava
+	mkdir mainResources
+	mkdir testJava
+	mkdir testResources
+
+	file("${mainJava}/empty.txt").text = "EMPTY FILE"
+	file("${mainResources}/empty.txt").text = "EMPTY FILE"
+	file("${testJava}/empty.txt").text = "EMPTY FILE"
+	file("${testResources}/empty.txt").text = "EMPTY FILE"
+
+	generateBuildFile("cm.lao.${productPackage}/cm.lao.${productPackage}.${moduleName}", buildTemplateName)
+	copyTemplate("cm.lao.${productPackage}/cm.lao.${productPackage}.${moduleName}/src/test/resources", "log4j2_test.xml.template", "log4j2.xml")
+	copyTemplate(testJava, "DemoTest.java.template", "DemoTest.java")
+}
+
+task build {
+}
+
+task createProjectBuild {
+	doFirst {
+		mkdir "cm.lao.${productPackage}/submodules"
+	}
+	doLast {
+		generateBuildFile("cm.lao.${productPackage}", "mainBuild.gradle.template")
+		copy {
+			include "settings.gradle.template"
+			into "cm.lao.${productPackage}"
+			rename "settings.gradle.template", "settings.gradle"
+			with templatesCopySpec
+		}
+		copy {
+			include "gitignoreRoot.template"
+			into "cm.lao.${productPackage}"
+			rename "gitignoreRoot.template", ".gitignore"
+			with templatesCopySpec
+		}
+		copy {
+			include "gitmodules.template"
+			into "cm.lao.${productPackage}"
+			rename "gitmodules.template", ".gitmodules"
+			with templatesCopySpec
+		}
+		file("cm.lao.${productPackage}/submodules/submodulesCommand.txt").text = "git submodule add git@gitlab.lao-sarl.cm:common/cm.lao.common.build.git submodules/cm.lao.common.build\n"
+	}
+}
+
+task setupE2eModule {
+	doLast {
+		generateModule("e2e", "e2eBuild.gradle.template")
+		copy {
+			include "XXXDriver.java.template"
+			include "XXXEnvironment.java.template"
+			include "XXXModule.java.template"
+			include "XXXPage.java.template"
+			include "XXXHomePage.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.e2e/src/main/java/cm/lao/${productPackageWithSlashSeparator}/e2e/web"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXSteps.java.template"
+			include "DemoWebSteps.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.e2e/src/main/java/cm/lao/${productPackageWithSlashSeparator}/e2e/web/steps"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "Demo.feature.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.e2e/src/main/resources/cm/lao/${productPackageWithSlashSeparator}/e2e/web/features"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXCucumberOptions.java.template"
+			include "AllFeaturesBeingImplementedTests.java.template"
+			include "AllFeaturesDryRunTests.java.template"
+			include "AllReadyFeaturesTests.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.e2e/src/test/java/cm/lao/${productPackageWithSlashSeparator}/e2e/web/features"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+	}
+}
+
+task setupCommonModule {
+	doLast {
+		generateModule("common", "commonBuild.gradle.template")
+		copy {
+			include "AttributesName.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.common/src/main/java/cm/lao/${productPackageWithSlashSeparator}/common"
+			rename "AttributesName.java.template", "AttributesName.java"
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXException.java.template"
+			include "XXXExceptionCode.java.template"
+			include "XXXRequestType.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.common/src/main/java/cm/lao/${productPackageWithSlashSeparator}/common"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "Common.gwt.xml.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.common/src/main/resources/cm/lao/${productPackageWithSlashSeparator}"
+			rename "Common.gwt.xml.template", "Common.gwt.xml"
+			with templatesCopySpec
+		}
+	}
+}
+
+task setupUiDomainModule {
+	doLast {
+		generateModule("ui.domain", "uiDomainBuild.gradle.template")
+		copy {
+			include "UiDomainObject.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.ui.domain/src/main/java/cm/lao/${productPackageWithSlashSeparator}/ui/domain"
+			rename "UiDomainObject.java.template", "${productNameAsCamelCase}UiDomainObject.java"
+			with templatesCopySpec
+		}
+		copy {
+			include "UiDomain.gwt.xml.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.ui.domain/src/main/resources/cm/lao/${productPackageWithSlashSeparator}/ui/domain"
+			rename "UiDomain.gwt.xml.template", "${productNameAsCamelCase}UiDomain.gwt.xml"
+			with templatesCopySpec
+		}
+	}
+}
+
+task setupCoreModule {
+	doLast {
+		generateModule("core", "coreBuild.gradle.template")
+		copy {
+			include "persistence.xml.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/resources/META-INF"
+			rename "persistence.xml.template", "persistence.xml"
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXApplication.java.template"
+			include "XXXApplicationModule.java.template"
+			include "ResourceBundleKeys.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/java/cm/lao/${productPackageWithSlashSeparator}/core"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXDomainObjectDao.java.template"
+			include "XXXDaoFactory.java.template"
+			include "XXXDomainObject.java.template"
+			include "XXXDomainObjectBase.java.template"
+			include "BatchTask.java.template"
+			include "XXXDaoFactoryCreator.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/java/cm/lao/${productPackageWithSlashSeparator}/core/domain"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXJpaDaoFactory.java.template"
+			include "XXXJpaGenericDao.java.template"
+			include "XXXJpaModule.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/java/cm/lao/${productPackageWithSlashSeparator}/core/persistence/dao/jpa"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "PersistenceModule.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/java/cm/lao/${productPackageWithSlashSeparator}/core/persistence"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXChangeLogResourcesProvider.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/java/cm/lao/${productPackageWithSlashSeparator}/core/persistence/dao/jpa/changelog"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXService.java.template"
+			include "XXXBatchTaskService.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/java/cm/lao/${productPackageWithSlashSeparator}/core/service"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXSettings.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/java/cm/lao/${productPackageWithSlashSeparator}/core/settings"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		file("cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/resources/cm/lao/${productPackageWithSlashSeparator}/ApplicationResources.properties").text = ""
+		file("cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/resources/cm/lao/${productPackageWithSlashSeparator}/ApplicationResources_fr.properties").text = ""
+		file("cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/resources/cm/lao/${productPackageWithSlashSeparator}/ApplicationResources_en.properties").text = ""
+		copy {
+			include "db.changelog-master.xml.template"
+			include "db.changelog-0.0.0.xml.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/resources/cm/lao/${productPackageWithSlashSeparator}/core/persistence/dao/jpa/changelog"
+			rename {filename -> filename.replace(".template", "")}
+			with templatesCopySpec
+		}
+		mkdir "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/resources/cm/lao/${productPackageWithSlashSeparator}/core/persistence/dao/jpa/changelog/sql"
+		file("cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/main/resources/cm/lao/${productPackageWithSlashSeparator}/core/persistence/dao/jpa/changelog/sql/empty.sql").text = "select * from table"
+		copy {
+			include "XXXEntityManagerFactoryPersistenceTestProvider.java.template"
+			include "XXXPersistenceTest.java.template"
+			include "JpaBatchTaskDaoTest.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/test/java/cm/lao/${productPackageWithSlashSeparator}/core/persistence/dao/jpa"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "PersistenceTestModule.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/test/java/cm/lao/${productPackageWithSlashSeparator}/core/persistence"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXServiceTest.java.template"
+			include "XXXBatchTaskServiceTest.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.core/src/test/java/cm/lao/${productPackageWithSlashSeparator}/core/service"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+	}
+}
+
+task setupUiWebModule {
+	doLast {
+		generateModule("ui.web", "uiWebBuild.gradle.template")
+		copyTemplate("cm.lao.${productPackage}/cm.lao.${productPackage}.ui.web/src/main/resources", "log4j2_web.xml.template", "log4j2.xml")
+
+		def mainWebApp = "cm.lao.${productPackage}/cm.lao.${productPackage}.ui.web/src/main/webapp";
+		mkdir "${mainWebApp}/images"
+		mkdir "${mainWebApp}/WEB-INF"
+
+		copy {
+			include "web.xml.template"
+			into "${mainWebApp}/WEB-INF"
+			rename {filename -> filename.replace("web", "web-template").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXContextListener.java.template"
+			include "GenericRemoteService.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.ui.web/src/main/java/cm/lao/${productPackageWithSlashSeparator}/ui/web"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "eureka-client.properties.template"
+			include "eureka-client-prod.properties.template"
+			include "eureka-client-test.properties.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.ui.web/src/main/resources"
+			rename {filename -> filename.replace(".template", "")}
+			with templatesCopySpec
+		}
+
+		copy {
+			include "GenericRemoteServiceTest.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.ui.web/src/test/java/cm/lao/${productPackageWithSlashSeparator}/ui/web"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+	}
+}
+
+task setupAndroidModule {
+	doLast {
+		generateModule("ui.android", "uiAndroidBuild.gradle.template")
+	}
+}
+
+task setupUiWebServiceServerModule {
+	doLast {
+		generateModule("ui.webservices.server", "uiWebservicesServerBuild.gradle.template")
+		copy {
+			include "XXXRestfulApplication.java.template"
+			include "XXXResources.java.template"
+			include "GuiceFeature.java.template"
+			include "HealthcheckResources.java.template"
+			include "XXXBatchTaskConsumer.java.template"
+			include "UiWebservicesServerConstants.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.ui.webservices.server/src/main/java/cm/lao/${productPackageWithSlashSeparator}/ui/webservices/server"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "").replace("UiWebservicesServer", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "AbstractXXXResourcesTest.java.template"
+      into "cm.lao.${productPackage}/cm.lao.${productPackage}.ui.webservices.server/src/test/java/cm/lao/${productPackageWithSlashSeparator}/ui/webservices/server"
+      rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "").replace("UiWebservicesServer", "")}
+      with templatesCopySpec
+    }
+	}
+}
+
+task setupUiWebServiceClientModule {
+	doLast {
+		generateModule("ui.webservices.client", "uiWebservicesClientBuild.gradle.template")
+		copy {
+			include "XXXRestClient.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.ui.webservices.client/src/main/java/cm/lao/${productPackageWithSlashSeparator}/ui/webservices/client"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+		copy {
+			include "XXXRestClientTest.java.template"
+			into "cm.lao.${productPackage}/cm.lao.${productPackage}.ui.webservices.client/src/test/java/cm/lao/${productPackageWithSlashSeparator}/ui/webservices/client"
+			rename {filename -> filename.replace("XXX", "${productNameAsCamelCase}").replace(".template", "")}
+			with templatesCopySpec
+		}
+	}
+}
+
+task setupFakeServices {
+	copy {
+		from("../templates") {
+			include 'fake-services/**'
+			exclude "fake-services/.env"
+			exclude "fake-services/server/api/eureka.json"
+		}
+		into "cm.lao.${productPackage}"
+		rename {filename -> filename.replace("gitignore", ".gitignore")}
+	}
+	copy {
+		include "fake-services/.env"
+		into "cm.lao.${productPackage}"
+		with templatesCopySpec
+	}
+	copy {
+		include "fake-services/server/api/eureka.json"
+		into "cm.lao.${productPackage}"
+		with templatesCopySpec
+	}
+}
+
+build.dependsOn setupE2eModule, setupFakeServices
+setupE2eModule.dependsOn setupUiWebModule, setupAndroidModule, setupUiWebServiceClientModule
+setupAndroidModule.dependsOn setupUiWebServiceServerModule, setupUiWebModule
+setupUiWebServiceClientModule.dependsOn setupUiWebServiceServerModule, setupUiWebModule
+setupUiWebModule.dependsOn setupCoreModule, setupUiWebServiceServerModule, setupUiDomainModule
+setupUiWebServiceServerModule.dependsOn setupCoreModule, setupUiDomainModule
+setupCoreModule.dependsOn setupCommonModule
+setupCommonModule.dependsOn createProjectBuild

@@ -1,0 +1,104 @@
+{
+  "name": "cm_lao_person",
+  "urls": [{
+    "path": "/person",
+    "requests": [{
+        "method": "POST",
+        "query": {},
+        "body": {
+          "civility": "Mister",
+          "firstName": "Rodrigue",
+          "lastName": "Lagoué Njinthe"
+        },
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true,
+            "result": "newPersonId3"
+          }
+        }
+      },
+      {
+        "method": "POST",
+        "query": {},
+        "body": {
+          "civility": "Mister",
+          "firstName": "Rodrigue",
+          "lastName": "Lagoué Njinthe",
+          "phoneNumber": {
+            "countryCode": "237",
+            "number": "653492410"
+          },
+          "address": {
+            "country": {
+              "id": "CM"
+            },
+            "city": {
+              "id": "CM_Bafang"
+            },
+            "street": "",
+            "postalCode": "",
+            "postOfficeBox": "",
+            "more": "",
+            "type": "Main"
+          }
+        },
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true,
+            "result": "newPersonId4"
+          }
+        }
+      },
+      {
+        "method": "PUT",
+        "query": {},
+        "body": {
+          "id": "personId1",
+          "civility": "Madam",
+          "firstName": "Rodrigue",
+          "lastName": "Lagoué Njinthe"
+        },
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true
+          }
+        }
+      },
+      {
+        "method": "PUT",
+        "query": {},
+        "body": {
+          "id": "personId1",
+          "civility": "Madam",
+          "firstName": "Tiphanie",
+          "lastName": "Lagoué Njinthe"
+        },
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true
+          }
+        }
+      },
+      {
+        "method": "PUT",
+        "query": {},
+        "body": {
+          "id": "personId1",
+          "civility": "Madam",
+          "firstName": "Tiphanie",
+          "lastName": "Simon Lagoué"
+        },
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true
+          }
+        }
+      }
+    ]
+  }]
+}

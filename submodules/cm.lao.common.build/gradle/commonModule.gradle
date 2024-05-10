@@ -1,0 +1,49 @@
+println 'File: commonModule.gradle'
+
+apply plugin: 'java-library'
+apply plugin: 'eclipse-wtp'
+group = 'cm.lao.common'
+ext.isCommonModule = true
+ext.isJava = true
+ext.isWeb = false
+
+apply from: '../submodules/cm.lao.common.build/gradle/buildProfiles.gradle'
+apply from: '../submodules/cm.lao.common.build/gradle/dependenciesRepositorySettings.gradle'
+apply from: '../submodules/cm.lao.common.build/gradle/commonRootProject.gradle'
+
+task sourcesJar(type: Jar) {
+	classifier("sources")
+	from(sourceSets.main.allSource)
+}
+
+if (project.hasProperty("hasTestJar") && project.hasTestJar) {
+	sourceSets {
+		testLib {
+			compileClasspath += sourceSets.main.output
+			runtimeClasspath += sourceSets.main.output
+			java {
+				srcDirs("src/test-lib/java")
+			}
+			resources {
+				srcDirs("src/test-lib/resources")
+			}
+		}
+	}
+
+	configurations {
+		testLibImplementation.extendsFrom(testImplementation)
+		testLibRuntimeOnly.extendsFrom(testRuntimeOnly)
+		testLibCompileOnly.extendsFrom(testCompileOnly)
+		testLibAnnotationProcessor.extendsFrom(testAnnotationProcessor)
+	}
+
+	task testJar(type: Jar) {
+		classifier("test")
+		from(project.properties["sourceSets"]["testLib"].output)
+	}
+}
+apply from: '../submodules/cm.lao.common.build/gradle/publishingRepositorySettings.gradle'
+
+test {
+	useJUnitPlatform()
+}

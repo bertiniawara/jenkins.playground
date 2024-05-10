@@ -1,0 +1,78 @@
+println 'File: publishingRepositorySettings.gradle'
+
+apply plugin: 'maven-publish'
+
+if (project.hasProperty("isJava") && project.isJava) {
+    ext.getCustomManifest = {
+        return manifest {
+            attributes("Title": name,
+                    "Version": version,
+                    "Vendor": 'LAO SARL',
+                    "Date": new java.text.SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").format(new java.util.Date()),
+                    "Git-Repository-Version": System.getenv("GIT_COMMIT") != null ? System.getenv("GIT_COMMIT") : "",
+                    "Build-Number": System.getenv("BUILD_NUMBER") != null ? System.getenv("BUILD_NUMBER") : ""
+            )
+        }
+    }
+    jar.manifest = project.getCustomManifest()
+}
+
+publishing {
+    repositories {
+        maven {
+            credentials {
+                username "${System.env.NEXUS_CREDENTIALS_USR}"
+                password "${System.env.NEXUS_CREDENTIALS_PSW}"
+            }
+
+            def releasesRepoUrl = "https://nexus.lao-sarl.cm/repository/maven-releases"
+            def snapshotsRepoUrl = "https://nexus.lao-sarl.cm/repository/maven-snapshots"
+            url = project.version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+        }
+    }
+    publications {
+        mavenJava(MavenPublication) {
+            String shouldBePublishedAsString = System.getenv("shouldBePublished")
+            boolean shouldBePublished = shouldBePublishedAsString == null ? false : Boolean.parseBoolean(shouldBePublishedAsString)
+            println "shouldBePublished: " + shouldBePublished
+            println "isControllerBuild: " + project.isControllerBuild
+            if (project.isControllerBuild && !shouldBePublished) {
+                println "no publication"
+                return
+            }
+
+            if (project.hasProperty("isJava") && project.isJava) {
+                println "is java project"
+                if (project.hasProperty("isMicroservice") && project.isMicroservice) {
+                    println "is Microservice project"
+                    artifact bootJar
+                } else if (project.hasProperty("isWeb") && project.isWeb) {
+                    println "is java web project"
+                    from project.components.web
+                } else if (project.hasProperty("isAndroid") && project.isAndroid) {
+                    println "is java android project"
+                    def apkNature = "release"
+                    if (project.isControllerBuild || project.isSnapshotBuild) {
+                        apkNature = "debug"
+                    }
+                    artifact("${project.buildDir}/outputs/apk/${apkNature}/${project.name}-${apkNature}.apk") {
+                        type "apk"
+                        extension "apk"
+                    }
+                } else {
+                    println "is simple java project"
+                    from components.java
+                    artifact sourcesJar
+                    if (project.hasProperty("hasTestJar") && project.hasTestJar) {
+                        artifact testJar
+                    }
+                }
+            } else if (project.hasProperty("isJavascript") && project.isJavascript) {
+                artifact("${project.outputDir}/${project.name}.zip") {
+                    type "zip"
+                    extension "zip"
+                }
+            }
+        }
+    }
+}

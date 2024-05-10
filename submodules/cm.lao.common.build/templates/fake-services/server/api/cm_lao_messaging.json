@@ -1,0 +1,23 @@
+{
+  "name": "cm_lao_messaging",
+  "urls": [{
+    "path" : "/email/send",
+    "requests": [{
+      "method": "POST",
+      "body": {
+        "recipient": "info@planugo.com",
+        "subject": "kenneth.fabo@lao-sarl.cm:kenneth fabo:Demande d'infos",
+        "content": "comment faire pour investir dans planugo"
+      },
+      "response": {
+          "statusCode": 200,
+        "body": {
+          "success": true,
+          "result": true
+        }
+      }
+      }]
+  }
+
+  ]
+}

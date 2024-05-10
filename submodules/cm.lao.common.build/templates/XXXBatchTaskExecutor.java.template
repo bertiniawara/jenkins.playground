@@ -1,0 +1,11 @@
+package cm.lao.${productPackage}.service;
+
+import cm.lao.common.microservice.api.BatchTaskExecutor;
+
+public class ${productNameAsCamelCase}BatchTaskExecutor implements BatchTaskExecutor {
+
+    @Override
+    public Object apply(String action, String parameters) {
+        return null;
+    }
+}

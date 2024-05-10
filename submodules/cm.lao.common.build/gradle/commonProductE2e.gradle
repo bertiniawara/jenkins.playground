@@ -1,0 +1,57 @@
+println 'File: commonProducte2e.gradle'
+
+group = 'lao'
+ext {
+	isJava = true
+	runOnlyBeingImplementedTests = System.getenv("runOnlyBeingImplementedTests") == "true";
+}
+
+println 'runOnlyBeingImplementedTests: ' + project.runOnlyBeingImplementedTests
+
+apply from: '../submodules/cm.lao.common.build/gradle/commonSubprojects.gradle'
+
+test {
+	if (project.runOnlyBeingImplementedTests) {
+		exclude	'**/AllReadyFeaturesTests.*'
+	} else {
+		exclude	'**/AllFeaturesBeingImplementedTests.*'
+	}
+	exclude	'**/AllFeaturesDryRunTests.*'
+	reports.html.enabled = false
+	reports.junitXml.enabled = false
+
+}
+
+project(":${rootProject.webModule}").tasks.whenTaskAdded { task ->
+	if ("appAfterIntegrationTest" == task.name) {
+		task.mustRunAfter(project.test)
+	}
+}
+
+def scriptsFolder = rootProject.rootDir.absolutePath + "/submodules/cm.lao.common.build/scripts/"
+println "Script Folder: " + scriptsFolder
+
+def fakeServiceStartScript = "npmFakeServicesStart.sh"
+if (project.isLocal) {
+	fakeServiceStartScript = "npmFakeServicesStartLocal.sh"
+}
+
+task startFakeServices(type: Exec) {
+	doFirst {
+		println "about to start faking the services situation"
+	}
+	commandLine "sh", scriptsFolder + fakeServiceStartScript
+}
+
+task stopFakeServices(type: Exec) {
+	doFirst {
+		println "about to stop faking the services situation"
+	}
+	commandLine "sh", scriptsFolder + "npmFakeServicesStop.sh"
+}
+
+
+test.dependsOn generateAutomatedTestsParametersFile
+test.dependsOn startFakeServices
+test.finalizedBy("stopFakeServices")
+

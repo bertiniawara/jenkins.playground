@@ -1,0 +1,40 @@
+package cm.lao.${productPackage};
+
+import cm.lao.common.microservice.util.Eureka;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScans;
+
+import cm.lao.common.microservice.Application;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+import java.util.concurrent.ScheduledExecutorService;
+
+@SpringBootApplication
+@EntityScan(basePackages = { "cm.lao.common.microservice.domain", "cm.lao.${productPackage}.domain" })
+@ComponentScans({
+		@ComponentScan(basePackages = { "cm.lao.common.microservice", "cm.lao.${productPackage}", "com.netflix.discovery" }),
+})
+@EnableJpaRepositories(value = {"cm.lao.common.microservice.repository", "cm.lao.${productPackage}.repository"})
+public class ${productNameAsCamelCase}Application extends Application {
+
+	public static void main(String[] args) {
+		SpringApplication.run(${productNameAsCamelCase}Application.class, args);
+	}
+
+	@Autowired
+	public ${productNameAsCamelCase}Application(Eureka eureka, ScheduledExecutorService executorService) {
+		super(eureka, executorService);
+	}
+
+	@Override
+	protected void started() {
+	}
+
+	@Override
+	protected void stopped() {
+	}
+}

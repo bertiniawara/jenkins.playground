@@ -1,0 +1,25 @@
+println "productionDeploy.gradle"
+
+ext.memory = 512m
+ext.homeDirectory = "homeDir"
+ext.logsDirectory = "logs"
+ext.database.url = ""
+ext.database.user = ""
+ext.database.password = ""
+
+
+task download {
+
+}
+
+task configureWebXml {
+
+}
+
+task configureHomeDir {
+
+}
+
+task generateDbConfigXml {
+
+}

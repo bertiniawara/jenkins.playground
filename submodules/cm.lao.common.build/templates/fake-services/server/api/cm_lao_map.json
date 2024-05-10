@@ -1,0 +1,160 @@
+{
+  "name": "cm_lao_map",
+  "urls": [{
+      "path": "/country/search",
+      "requests": [{
+        "method": "GET",
+        "query": {
+          "locale": "en",
+          "queryString": "ca"
+        },
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true,
+            "result": [{
+                "id": "CM",
+                "name": "Cameroon",
+                "callingCode": "237",
+                "alpha2Code": "CM"
+              },
+              {
+                "id": "CA",
+                "name": "Canada",
+                "callingCode": "1",
+                "alpha2Code": "CA"
+              }
+            ]
+          }
+        }
+      }]
+    },{
+      "path": "/map/country/CM",
+      "requests": [{
+        "method": "GET",
+        "query": {
+          "locale": "en"
+        },
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true,
+            "result": 
+            {
+              "id": "CM",
+              "name": "Cameroon",
+              "callingCode": "237",
+              "alpha2Code": "CM"
+          }
+          }
+        }
+      }]
+    },{
+      "path": "/country/CM/city/CM_Douala",
+      "requests": [{
+        "method": "GET",
+        "query": {
+          "locale": "en"
+        },
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true,
+            "result": 
+            {
+              "name": "Douala",
+              "id": "CM_Douala"
+            }
+          }
+        }
+      }]
+    },
+    {
+      "path": "/country/CM/city/CM_Bafang",
+      "requests": [{
+        "method": "GET",
+        "query": {
+          "locale": "en"
+        },
+        "response": {
+          "statusCode": 200,
+          "body": {
+            "success": true,
+            "result": 
+            {
+              "name": "Bafang",
+              "id": "CM_Bafang"
+            }
+          }
+        }
+      }]
+    },
+    {
+      "path": "/country/CM/city/search",
+      "requests": [{
+          "method": "GET",
+          "query": {
+            "queryString": "ba"
+          },
+          "response": {
+            "statusCode": 200,
+            "body": {
+              "success": true,
+              "result": [{
+                  "name": "Bafang",
+                  "id": "CM_Bafang"
+                },
+                {
+                  "name": "Bafoussam",
+                  "id": "CM_Bafoussam"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "query": {
+            "queryString": "ong"
+          },
+          "response": {
+            "statusCode": 200,
+            "body": {
+              "success": true,
+              "result": [{
+                  "name": "Nkongsamba",
+                  "id": "CM_Nkongsamba"
+                },
+                {
+                  "name": "Nkong",
+                  "id": "CM_Nkong"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "query": {
+            "queryString": "do"
+          },
+          "response": {
+            "statusCode": 200,
+            "body": {
+              "success": true,
+              "result": [{
+                  "name": "Douala",
+                  "id": "CM_Douala"
+                },
+                {
+                  "name": "Lagdo",
+                  "id": "CM_Lagdo"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

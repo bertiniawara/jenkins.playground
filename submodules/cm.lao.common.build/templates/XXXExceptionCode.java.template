@@ -1,0 +1,12 @@
+package cm.lao.${productPackage}.exception;
+
+import java.io.Serializable;
+
+/**
+ * 
+ */
+public interface ${productNameAsCamelCase}ExceptionCode extends Serializable {
+	
+	String stringify();
+
+}
