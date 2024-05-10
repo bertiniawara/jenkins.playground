@@ -13,7 +13,6 @@ def userGroupId
 
 node {
     properties([
-            gitLabConnection('LAO GITLAB'),
             pipelineTriggers([
                     [
                             $class                       : 'GitLabPushTrigger',
